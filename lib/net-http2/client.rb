@@ -8,9 +8,9 @@ module NetHttp2
   class Client
     attr_reader :uri
 
-    def initialize(options={})
-      @uri    = URI.parse(options[:uri])
-      @is_ssl = options[:ssl]
+    def initialize(uri)
+      @uri    = URI.parse(uri)
+      @is_ssl = (@uri.scheme == 'https')
 
       @pipe_r, @pipe_w = Socket.pair(:UNIX, :STREAM, 0)
       @socket_thread   = nil

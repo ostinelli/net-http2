@@ -2,8 +2,8 @@ require 'spec_helper'
 
 describe "SSL Requests" do
   let(:port) { 9516 }
-  let(:server) { NetHttp2::Dummy::Server.new(port: port) }
-  let(:client) { NetHttp2::Client.new(uri: "https://localhost:#{port}") }
+  let(:server) { NetHttp2::Dummy::Server.new(port: port, ssl: true) }
+  let(:client) { NetHttp2::Client.new("https://localhost:#{port}") }
 
   before { server.listen }
   after do
