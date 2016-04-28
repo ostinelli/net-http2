@@ -40,7 +40,7 @@ response.body     # => "A body"
 client.close
 ```
 
-With a a non-blocking call:
+With a non-blocking call:
 ```ruby
 require 'net-http2'
 
