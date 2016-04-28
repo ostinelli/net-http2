@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "Sync requests with timeouts" do
+describe "Timeouts with sync requests" do
   let(:port) { 9516 }
   let(:server) { NetHttp2::Dummy::Server.new(port: port) }
   let(:client) { NetHttp2::Client.new(uri: "http://localhost:#{port}") }
@@ -33,7 +33,7 @@ describe "Sync requests with timeouts" do
     started_at = Time.now
 
     responses = []
-    thread = Thread.new { responses << client.get('/path', { 'x-custom-header' => 'custom' }, timeout: 1) }
+    thread    = Thread.new { responses << client.get('/path', { 'x-custom-header' => 'custom' }, timeout: 1) }
     responses << client.get('/path', { 'x-custom-header' => 'custom' }, timeout: 1)
 
     thread.join

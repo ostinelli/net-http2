@@ -26,6 +26,11 @@ module NetHttp2
     def async_call_with(request, &block)
       @block = block
       send_data_of request
+
+      Thread.new do
+        wait(request.timeout)
+        @block.call(nil) unless @completed
+      end
     end
 
     private
