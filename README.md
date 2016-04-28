@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ostinelli/net-http2.svg?branch=master)](https://travis-ci.org/ostinelli/net-http2)
+
 # NetHttp2
 
 NetHttp2 is an HTTP2 client for Ruby.
