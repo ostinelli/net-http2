@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.licenses = ['MIT']
   spec.authors  = ["Roberto Ostinelli"]
   spec.email    = ["roberto@ostinelli.net"]
-  spec.summary  = %q{An HTTP2 Client.}
+  spec.summary  = %q{NetHttp2 is an HTTP2 client for Ruby.}
   spec.homepage = "http://github.com/ostinelli/net-http2"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
