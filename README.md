@@ -48,14 +48,14 @@ client = NetHttp2::Client.new(uri: "http://106.186.112.116")
 # send request
 client.async_get('/') do |response|
 
-	# read the response
-	p response.ok?      # => true
-	p response.status   # => '200'
-	p response.headers  # => {":status"=>"200"}
-	p response.body     # => "A body"
+  # read the response
+  p response.ok?      # => true
+  p response.status   # => '200'
+  p response.headers  # => {":status"=>"200"}
+  p response.body     # => "A body"
 
-	# close the connection
-	client.close
+  # close the connection
+  client.close
 end
 
 # quick & dirty fix to wait for the block to be called asynchronously
@@ -77,7 +77,7 @@ NetHttp2::Client.new(uri)
  * **new(uri, options={})** → **`NetHttp2::Client`**
  Returns w new client. `uri` is a `string` such as https://localhost:443.
  The only current option is `:ssl_context`, in case the uri has an https scheme and you want your SSL client to use a custom context.
- 
+
  For instance:
 
   ```ruby
@@ -85,7 +85,7 @@ NetHttp2::Client.new(uri)
   ctx         = OpenSSL::SSL::SSLContext.new
   ctx.key     = OpenSSL::PKey::RSA.new(certificate, "cert_password")
   ctx.cert    = OpenSSL::X509::Certificate.new(certificate)
-  
+
   NetHttp2::Client.new(uri, ssl_context: ctx)
   ```
 
@@ -127,28 +127,27 @@ NetHttp2::Client.new(uri)
   client.get('/path2', { 'x-custom-header' => 'custom' }) { |response_2| p response_2 }
   client.get('/path3', {}, timeout: 1) { |response_3| p response_3 }
   ```
- 
+
  * **async_post(path, body, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
  Sends a POST request. This is a non-blocking call. Options can only specify a `:timeout` (defaults to 60).
  Returns `nil` in case a timeout occurs.
- 
+
  * **async_put(path,body, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
  Sends a PUT request. This is a non-blocking call. Options can only specify a `:timeout` (defaults to 60).
  Returns `nil` in case a timeout occurs.
- 
+
  * **async_delete(path, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
  Sends a DELETE request. This is a non-blocking call. Options can only specify a `:timeout` (defaults to 60).
  Returns `nil` in case a timeout occurs.
- 
+
 
 ### `NetHttp2::Response`
-The response to a call to `connection.push`.
 
 #### Methods
 
  * **ok?** → **`boolean`**
  Returns if the request was successful.
- 
+
  * **headers** → **`hash`**
  Returns a Hash containing the Headers of the response.
 
