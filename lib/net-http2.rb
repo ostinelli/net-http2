@@ -1,5 +1,6 @@
 require 'net-http2/request/base'
 require 'net-http2/request/get'
+require 'net-http2/request/post'
 require 'net-http2/version'
 
 module NetHttp2
