@@ -5,7 +5,7 @@ module NetHttp2
     DEFAULT_TIMEOUT = 60
 
     class Base
-      attr_reader :body, :timeout
+      attr_reader :uri, :path, :body, :timeout
 
       def initialize(method, uri, path, body, headers, options={})
         @method  = method

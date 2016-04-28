@@ -10,6 +10,8 @@ shared_examples_for "a NetHttp2 Request with a body" do |spec_opts={}|
 
     subject { request }
 
+    it { is_expected.to have_attributes(uri: uri) }
+    it { is_expected.to have_attributes(path: path) }
     it { is_expected.to have_attributes(body: body) }
 
     context "when timeout is passed in options" do
@@ -79,6 +81,8 @@ shared_examples_for "a NetHttp2 Request with no body" do |spec_opts={}|
 
     subject { request }
 
+    it { is_expected.to have_attributes(uri: uri) }
+    it { is_expected.to have_attributes(path: path) }
     it { is_expected.to have_attributes(body: nil) }
 
     context "when timeout is passed in options" do
