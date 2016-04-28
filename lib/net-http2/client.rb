@@ -41,6 +41,26 @@ module NetHttp2
       call_with request
     end
 
+    def async_get(path, headers={}, options={}, &block)
+      request = NetHttp2::Request::Get.new(@uri, path, headers, options)
+      async_call_with request, &block
+    end
+
+    def async_post(path, body, headers={}, options={}, &block)
+      request = NetHttp2::Request::Post.new(@uri, path, body, headers, options)
+      async_call_with request, &block
+    end
+
+    def async_put(path, body, headers={}, options={}, &block)
+      request = NetHttp2::Request::Put.new(@uri, path, body, headers, options)
+      async_call_with request, &block
+    end
+
+    def async_delete(path, headers={}, options={}, &block)
+      request = NetHttp2::Request::Delete.new(@uri, path, headers, options)
+      async_call_with request, &block
+    end
+
     def ssl?
       @is_ssl
     end
@@ -59,7 +79,12 @@ module NetHttp2
 
     def call_with(request)
       ensure_open
-      new_stream.call_with(request)
+      new_stream.call_with request
+    end
+
+    def async_call_with(request, &block)
+      ensure_open
+      new_stream.async_call_with request, &block
     end
 
     def new_stream

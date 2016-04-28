@@ -13,5 +13,12 @@ module NetHttp2
     def key_file_path
       File.expand_path('../priv/server.key', __FILE__)
     end
+
+    def wait_for(seconds=2, &block)
+      (0..seconds).each do
+        break if block.call
+        sleep 1
+      end
+    end
   end
 end
