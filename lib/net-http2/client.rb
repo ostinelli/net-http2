@@ -6,19 +6,15 @@ require 'http/2'
 module NetHttp2
 
   class Client
-    attr_reader :uri, :cert_path
+    attr_reader :uri
 
     def initialize(options={})
-      @uri       = URI.parse(options[:uri])
-      @cert_path = options[:cert_path]
-      @cert_pass = options[:cert_pass]
-      @is_ssl    = !@cert_path.nil?
+      @uri    = URI.parse(options[:uri])
+      @is_ssl = options[:ssl]
 
       @pipe_r, @pipe_w = Socket.pair(:UNIX, :STREAM, 0)
       @socket_thread   = nil
       @mutex           = Mutex.new
-
-      raise "Cert file not found: #{@cert_path}" if @cert_path && !File.exist?(@cert_path)
     end
 
     def get(path, headers={}, options={})
@@ -68,7 +64,6 @@ module NetHttp2
     def close
       exit_thread(@socket_thread)
 
-      @ssl_context   = nil
       @h2            = nil
       @pipe_r        = nil
       @pipe_w        = nil
@@ -137,7 +132,7 @@ module NetHttp2
       tcp = TCPSocket.new(@uri.host, @uri.port)
 
       if ssl?
-        socket            = OpenSSL::SSL::SSLSocket.new(tcp, ssl_context)
+        socket            = OpenSSL::SSL::SSLSocket.new(tcp)
         socket.sync_close = true
         socket.hostname   = @uri.hostname
 
@@ -146,17 +141,6 @@ module NetHttp2
         socket
       else
         tcp
-      end
-    end
-
-    def ssl_context
-      @ssl_context ||= begin
-        ctx         = OpenSSL::SSL::SSLContext.new
-        certificate = File.read(@cert_path)
-        passphrase  = @cert_pass
-        ctx.key     = OpenSSL::PKey::RSA.new(certificate, passphrase)
-        ctx.cert    = OpenSSL::X509::Certificate.new(certificate)
-        ctx
       end
     end
 
