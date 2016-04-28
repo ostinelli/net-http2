@@ -8,8 +8,10 @@ module NetHttp2
   class Client
     attr_reader :uri
 
-    def initialize(uri)
-      @uri    = URI.parse(uri)
+    def initialize(uri, options={})
+      @uri         = URI.parse(uri)
+      @ssl_context = options[:ssl_context] || OpenSSL::SSL::SSLContext.new
+
       @is_ssl = (@uri.scheme == 'https')
 
       @pipe_r, @pipe_w = Socket.pair(:UNIX, :STREAM, 0)
@@ -132,7 +134,7 @@ module NetHttp2
       tcp = TCPSocket.new(@uri.host, @uri.port)
 
       if ssl?
-        socket            = OpenSSL::SSL::SSLSocket.new(tcp)
+        socket            = OpenSSL::SSL::SSLSocket.new(tcp, @ssl_context)
         socket.sync_close = true
         socket.hostname   = @uri.hostname
 

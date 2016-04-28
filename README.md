@@ -74,9 +74,20 @@ NetHttp2::Client.new(uri)
 
 #### Methods
 
- * **new(uri)** → **`NetHttp2::Client`**
+ * **new(uri, options={})** → **`NetHttp2::Client`**
  Returns w new client. `uri` is a `string` such as https://localhost:443.
+ The only current option is `:ssl_context`, in case the uri has an https scheme and you want your SSL client to use a custom context.
+ 
+ For instance:
 
+  ```ruby
+  certificate = File.read("cert.pem")
+  ctx         = OpenSSL::SSL::SSLContext.new
+  ctx.key     = OpenSSL::PKey::RSA.new(certificate, "cert_password")
+  ctx.cert    = OpenSSL::X509::Certificate.new(certificate)
+  
+  NetHttp2::Client.new(uri, ssl_context: ctx)
+  ```
 
  * **uri** → **`URI`**
  Returns the URI of the APNS endpoint.
