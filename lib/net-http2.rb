@@ -1,3 +1,4 @@
+require 'net-http2/response'
 require 'net-http2/request/base'
 require 'net-http2/request/delete'
 require 'net-http2/request/get'
