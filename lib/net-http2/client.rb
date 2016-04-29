@@ -42,11 +42,6 @@ module NetHttp2
 
     private
 
-    def async_call_with(request, &block)
-      ensure_open
-      new_stream.async_call_with request, &block
-    end
-
     def new_stream
       NetHttp2::Stream.new(uri: @uri, h2_stream: h2.new_stream)
     end
