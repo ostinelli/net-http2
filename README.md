@@ -2,7 +2,7 @@
 
 # NetHttp2
 
-NetHttp2 is an HTTP2 client for Ruby.
+NetHttp2 is an HTTP/2 client for Ruby.
 
 
 ## Installation
@@ -25,7 +25,7 @@ With a blocking call:
 require 'net-http2'
 
 # create a client
-client = NetHttp2::Client.new(uri: "http://106.186.112.116")
+client = NetHttp2::Client.new("http://106.186.112.116")
 
 # send request
 response = client.get('/')
@@ -45,7 +45,7 @@ With a non-blocking call:
 require 'net-http2'
 
 # create a client
-client = NetHttp2::Client.new(uri: "http://106.186.112.116")
+client = NetHttp2::Client.new("http://106.186.112.116")
 
 # send request
 client.async_get('/') do |response|
@@ -71,15 +71,15 @@ sleep 5
 To create a new client:
 
 ```ruby
-NetHttp2::Client.new(uri)
+NetHttp2::Client.new(url)
 ```
 
 #### Methods
 
- * **new(uri, options={})** → **`NetHttp2::Client`**
+ * **new(url, options={})** → **`NetHttp2::Client`**
 
- Returns a new client. `uri` is a `string` such as https://localhost:443.
- The only current option is `:ssl_context`, in case the uri has an https scheme and you want your SSL client to use a custom context.
+ Returns a new client. `url` is a `string` such as https://localhost:443.
+ The only current option is `:ssl_context`, in case the url has an https scheme and you want your SSL client to use a custom context.
 
  For instance:
 
@@ -89,16 +89,19 @@ NetHttp2::Client.new(uri)
   ctx.key     = OpenSSL::PKey::RSA.new(certificate, "cert_password")
   ctx.cert    = OpenSSL::X509::Certificate.new(certificate)
 
-  NetHttp2::Client.new(uri, ssl_context: ctx)
+  NetHttp2::Client.new(url, ssl_context: ctx)
   ```
 
  * **uri** → **`URI`**
 
- Returns the URI of the APNS endpoint.
+ Returns the URI of the endpoint.
+
+##### Blocking calls
+These behave similarly to HTTP/1 calls.
 
  * **get(path, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
 
- Sends a GET request. This is a blocking call. Options can only specify a `:timeout` (defaults to 60).
+ Sends a GET request. Options can only specify a `:timeout` (defaults to 60).
  Returns `nil` in case a timeout occurs.
 
   For example:
@@ -111,22 +114,25 @@ NetHttp2::Client.new(uri)
 
  * **post(path, body, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
 
- Sends a POST request. This is a blocking call. Options can only specify a `:timeout` (defaults to 60).
+ Sends a POST request. Options can only specify a `:timeout` (defaults to 60).
  Returns `nil` in case a timeout occurs.
 
  * **put(path, body, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
 
- Sends a PUT request. This is a blocking call. Options can only specify a `:timeout` (defaults to 60).
+ Sends a PUT request. Options can only specify a `:timeout` (defaults to 60).
  Returns `nil` in case a timeout occurs.
 
  * **delete(path, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
 
- Sends a DELETE request. This is a blocking call. Options can only specify a `:timeout` (defaults to 60).
+ Sends a DELETE request. Options can only specify a `:timeout` (defaults to 60).
  Returns `nil` in case a timeout occurs.
 
- * **async_get(path, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
+##### Non-blocking calls
+> The API of these calls is still subject to change, as on of HTTP/2 benefits is to allow for the streaming of responses' bodies.
 
- Sends a GET request. This is a non-blocking call. Options can only specify a `:timeout` (defaults to 60).
+ * **async_get(path, headers={}, options={})** → block called with **`NetHttp2::Response` or `nil`**
+
+ Sends a GET request. Options can only specify a `:timeout` (defaults to 60).
  Returns `nil` in case a timeout occurs.
 
   For example:
@@ -137,19 +143,19 @@ NetHttp2::Client.new(uri)
   client.get('/path3', {}, timeout: 1) { |response_3| p response_3 }
   ```
 
- * **async_post(path, body, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
+ * **async_post(path, body, headers={}, options={})** → block called with **`NetHttp2::Response` or `nil`**
 
- Sends a POST request. This is a non-blocking call. Options can only specify a `:timeout` (defaults to 60).
+ Sends a POST request. Options can only specify a `:timeout` (defaults to 60).
  Returns `nil` in case a timeout occurs.
 
- * **async_put(path,body, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
+ * **async_put(path,body, headers={}, options={})** → block called with **`NetHttp2::Response` or `nil`**
 
- Sends a PUT request. This is a non-blocking call. Options can only specify a `:timeout` (defaults to 60).
+ Sends a PUT request. Options can only specify a `:timeout` (defaults to 60).
  Returns `nil` in case a timeout occurs.
 
- * **async_delete(path, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
+ * **async_delete(path, headers={}, options={})** → block called with **`NetHttp2::Response` or `nil`**
 
- Sends a DELETE request. This is a non-blocking call. Options can only specify a `:timeout` (defaults to 60).
+ Sends a DELETE request. Options can only specify a `:timeout` (defaults to 60).
  Returns `nil` in case a timeout occurs.
 
 

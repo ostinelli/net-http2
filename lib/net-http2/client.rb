@@ -8,8 +8,8 @@ module NetHttp2
   class Client
     attr_reader :uri
 
-    def initialize(uri, options={})
-      @uri         = URI.parse(uri)
+    def initialize(url, options={})
+      @uri         = URI.parse(url)
       @ssl_context = options[:ssl_context] || OpenSSL::SSL::SSLContext.new
 
       @is_ssl = (@uri.scheme == 'https')
