@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/ostinelli/net-http2.svg?branch=master)](https://travis-ci.org/ostinelli/net-http2)
+[![Code Climate](https://codeclimate.com/github/ostinelli/net-http2/badges/gpa.svg)](https://codeclimate.com/github/ostinelli/net-http2)
 
 # NetHttp2
 
