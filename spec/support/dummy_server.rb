@@ -65,10 +65,6 @@ module NetHttp2
 
       private
 
-      def apn_file_path
-        File.expand_path('../priv/apn.pem', __FILE__)
-      end
-
       def cert_file_path
         File.expand_path('../priv/server.crt', __FILE__)
       end
