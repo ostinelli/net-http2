@@ -22,7 +22,9 @@ describe "Sending sync requests" do
       res
     end
 
-    response = client.get('/path', { 'x-custom-header' => 'custom' })
+    response = client.call(:get, '/path',
+      headers: { 'x-custom-header' => 'custom' }
+    )
 
     expect(response).to be_a NetHttp2::Response
     expect(response.body).to eq "response body"
@@ -46,7 +48,10 @@ describe "Sending sync requests" do
       res
     end
 
-    response = client.post('/path', "body", { 'x-custom-header' => 'custom' })
+    response = client.call(:post, '/path',
+      body:    "body",
+      headers: { 'x-custom-header' => 'custom' }
+    )
 
     expect(response).to be_a NetHttp2::Response
     expect(response.body).to eq "response body"
@@ -61,56 +66,6 @@ describe "Sending sync requests" do
     expect(request.body).to eq "body"
   end
 
-  it "sends PUT requests with the correct parameters" do
-    request       = nil
-    server.on_req = Proc.new do |req|
-      request = req
-
-      res                    = NetHttp2::Dummy::Response.new
-      res.headers[":status"] = "200"
-      res.body               = "response body"
-      res
-    end
-
-    response = client.put('/path', "body", { 'x-custom-header' => 'custom' })
-
-    expect(response).to be_a NetHttp2::Response
-    expect(response.body).to eq "response body"
-
-    expect(request).not_to be_nil
-    expect(request.headers[":scheme"]).to eq "http"
-    expect(request.headers[":method"]).to eq "PUT"
-    expect(request.headers[":path"]).to eq "/path"
-    expect(request.headers["host"]).to eq "localhost"
-    expect(request.headers["x-custom-header"]).to eq "custom"
-
-    expect(request.body).to eq "body"
-  end
-
-  it "sends DELETE requests with the correct parameters" do
-    request       = nil
-    server.on_req = Proc.new do |req|
-      request = req
-
-      res                    = NetHttp2::Dummy::Response.new
-      res.headers[":status"] = "200"
-      res.body               = "response body"
-      res
-    end
-
-    response = client.delete('/path', { 'x-custom-header' => 'custom' })
-
-    expect(response).to be_a NetHttp2::Response
-    expect(response.body).to eq "response body"
-
-    expect(request).not_to be_nil
-    expect(request.headers[":scheme"]).to eq "http"
-    expect(request.headers[":method"]).to eq "DELETE"
-    expect(request.headers[":path"]).to eq "/path"
-    expect(request.headers["host"]).to eq "localhost"
-    expect(request.headers["x-custom-header"]).to eq "custom"
-  end
-
   it "sends multiple GET requests sequentially" do
     requests      = []
     server.on_req = Proc.new do |req|
@@ -122,8 +77,8 @@ describe "Sending sync requests" do
       res
     end
 
-    response_1 = client.get('/path1')
-    response_2 = client.get('/path2')
+    response_1 = client.call(:get, '/path1')
+    response_2 = client.call(:get, '/path2')
 
     expect(response_1).to be_a NetHttp2::Response
     expect(response_1.body).to eq "response for /path1"
@@ -147,8 +102,8 @@ describe "Sending sync requests" do
     end
 
     response_1 = nil
-    thread     = Thread.new { response_1 = client.get('/path1') }
-    response_2 = client.get('/path2')
+    thread     = Thread.new { response_1 = client.call(:get, '/path1') }
+    response_2 = client.call(:get, '/path2')
 
     thread.join
 

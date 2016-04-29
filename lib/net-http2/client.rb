@@ -21,44 +21,10 @@ module NetHttp2
       @mutex           = Mutex.new
     end
 
-    def get(path, headers={}, options={})
-      request = NetHttp2::Request::Get.new(@uri, path, headers, options)
-      call_with request
-    end
-
-    def post(path, body, headers={}, options={})
-      request = NetHttp2::Request::Post.new(@uri, path, body, headers, options)
-      call_with request
-    end
-
-    def put(path, body, headers={}, options={})
-      request = NetHttp2::Request::Put.new(@uri, path, body, headers, options)
-      call_with request
-    end
-
-    def delete(path, headers={}, options={})
-      request = NetHttp2::Request::Delete.new(@uri, path, headers, options)
-      call_with request
-    end
-
-    def async_get(path, headers={}, options={}, &block)
-      request = NetHttp2::Request::Get.new(@uri, path, headers, options)
-      async_call_with request, &block
-    end
-
-    def async_post(path, body, headers={}, options={}, &block)
-      request = NetHttp2::Request::Post.new(@uri, path, body, headers, options)
-      async_call_with request, &block
-    end
-
-    def async_put(path, body, headers={}, options={}, &block)
-      request = NetHttp2::Request::Put.new(@uri, path, body, headers, options)
-      async_call_with request, &block
-    end
-
-    def async_delete(path, headers={}, options={}, &block)
-      request = NetHttp2::Request::Delete.new(@uri, path, headers, options)
-      async_call_with request, &block
+    def call(method, path, options={})
+      request = NetHttp2::Request.new(method, @uri, path, options)
+      ensure_open
+      new_stream.call_with request
     end
 
     def ssl?
@@ -75,11 +41,6 @@ module NetHttp2
     end
 
     private
-
-    def call_with(request)
-      ensure_open
-      new_stream.call_with request
-    end
 
     def async_call_with(request, &block)
       ensure_open

@@ -20,7 +20,6 @@ gem 'net-http2'
 
 ## Usage
 
-With a blocking call:
 ```ruby
 require 'net-http2'
 
@@ -38,30 +37,6 @@ response.body     # => "A body"
 
 # close the connection
 client.close
-```
-
-With a non-blocking call:
-```ruby
-require 'net-http2'
-
-# create a client
-client = NetHttp2::Client.new("http://106.186.112.116")
-
-# send request
-client.async_get('/') do |response|
-
-  # read the response
-  response.ok?      # => true
-  response.status   # => '200'
-  response.headers  # => {":status"=>"200"}
-  response.body     # => "A body"
-
-  # close the connection
-  client.close
-end
-
-# quick & dirty fix to wait for the block to be called asynchronously
-sleep 5
 ```
 
 
@@ -99,64 +74,24 @@ NetHttp2::Client.new(url)
 ##### Blocking calls
 These behave similarly to HTTP/1 calls.
 
- * **get(path, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
+ * **call(method, path, options={})** → **`NetHttp2::Response` or `nil`**
 
- Sends a GET request. Options can only specify a `:timeout` (defaults to 60).
- Returns `nil` in case a timeout occurs.
+ Sends a request. Returns `nil` in case a timeout occurs.
+
+ `method` is a symbol that specifies the `:method` header (`:get`, `:post`, `:put`, `:patch`, `:delete`, `:options`). The body and the headers of the request can be specified in the options, together with the timeout.
 
   For example:
 
   ```ruby
-  response_1 = client.get('/path1')
-  response_2 = client.get('/path2', { 'x-custom-header' => 'custom' })
-  response_3 = client.get('/path3', { 'x-custom-header' => 'custom' }, timeout: 1)
+  response_1 = client.call(:get, '/path1')
+  response_2 = client.call(:get, '/path2', headers: { 'x-custom' => 'custom' })
+  response_3 = client.call(:post '/path3', body: "the request body", timeout: 1)
   ```
 
- * **post(path, body, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
-
- Sends a POST request. Options can only specify a `:timeout` (defaults to 60).
- Returns `nil` in case a timeout occurs.
-
- * **put(path, body, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
-
- Sends a PUT request. Options can only specify a `:timeout` (defaults to 60).
- Returns `nil` in case a timeout occurs.
-
- * **delete(path, headers={}, options={})** → **`NetHttp2::Response` or `nil`**
-
- Sends a DELETE request. Options can only specify a `:timeout` (defaults to 60).
- Returns `nil` in case a timeout occurs.
 
 ##### Non-blocking calls
-> The API of these calls is still subject to change, as on of HTTP/2 benefits is to allow for the streaming of responses' bodies.
 
- * **async_get(path, headers={}, options={})** → block called with **`NetHttp2::Response` or `nil`**
-
- Sends a GET request. Options can only specify a `:timeout` (defaults to 60).
- Returns `nil` in case a timeout occurs.
-
-  For example:
-
-  ```ruby
-  client.get('/path1') { |response_1| p response_2 }
-  client.get('/path2', { 'x-custom-header' => 'custom' }) { |response_2| p response_2 }
-  client.get('/path3', {}, timeout: 1) { |response_3| p response_3 }
-  ```
-
- * **async_post(path, body, headers={}, options={})** → block called with **`NetHttp2::Response` or `nil`**
-
- Sends a POST request. Options can only specify a `:timeout` (defaults to 60).
- Returns `nil` in case a timeout occurs.
-
- * **async_put(path,body, headers={}, options={})** → block called with **`NetHttp2::Response` or `nil`**
-
- Sends a PUT request. Options can only specify a `:timeout` (defaults to 60).
- Returns `nil` in case a timeout occurs.
-
- * **async_delete(path, headers={}, options={})** → block called with **`NetHttp2::Response` or `nil`**
-
- Sends a DELETE request. Options can only specify a `:timeout` (defaults to 60).
- Returns `nil` in case a timeout occurs.
+> The real benefit of HTTP/2 is being able to receive body and header streams. The non-blocking API calls are currently being developed.
 
 
 ### `NetHttp2::Response`

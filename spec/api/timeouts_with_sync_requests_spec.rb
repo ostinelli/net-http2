@@ -16,15 +16,15 @@ describe "Timeouts with sync requests" do
   end
 
   it "returns nil when no response is received within the specified timeout" do
-    response = client.get('/path', { 'x-custom-header' => 'custom' }, timeout: 1)
+    response = client.call(:get, '/path', headers: { 'x-custom-header' => 'custom' }, timeout: 1)
 
     expect(response).to be_nil
   end
 
   it "returns nil when no sequential responses are received within the specified timeout" do
     responses = []
-    responses << client.get('/path', { 'x-custom-header' => 'custom' }, timeout: 1)
-    responses << client.get('/path', { 'x-custom-header' => 'custom' }, timeout: 1)
+    responses << client.call(:get, '/path', headers: { 'x-custom-header' => 'custom' }, timeout: 1)
+    responses << client.call(:get, '/path', headers: { 'x-custom-header' => 'custom' }, timeout: 1)
 
     expect(responses.compact).to be_empty
   end
@@ -33,8 +33,8 @@ describe "Timeouts with sync requests" do
     started_at = Time.now
 
     responses = []
-    thread    = Thread.new { responses << client.get('/path', { 'x-custom-header' => 'custom' }, timeout: 1) }
-    responses << client.get('/path', { 'x-custom-header' => 'custom' }, timeout: 1)
+    thread    = Thread.new { responses << client.call(:get, '/path', headers: { 'x-custom-header' => 'custom' }, timeout: 1) }
+    responses << client.call(:get, '/path', headers: { 'x-custom-header' => 'custom' }, timeout: 1)
 
     thread.join
 

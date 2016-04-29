@@ -15,22 +15,12 @@ module NetHttp2
       end
 
       @h2_stream.on(:data) { |d| @data << d }
-      @h2_stream.on(:close) { mark_as_completed_and_async_respond }
+      @h2_stream.on(:close) { @completed = true }
     end
 
     def call_with(request)
       send_data_of request
       sync_respond(request.timeout)
-    end
-
-    def async_call_with(request, &block)
-      @block = block
-      send_data_of request
-
-      Thread.new do
-        wait(request.timeout)
-        @block.call(nil) unless @completed
-      end
     end
 
     private
@@ -47,21 +37,9 @@ module NetHttp2
       end
     end
 
-    def mark_as_completed_and_async_respond
-      @completed = true
-      @block.call(response) if @block
-    end
-
     def sync_respond(timeout)
       wait(timeout)
       response if @completed
-    end
-
-    def response
-      NetHttp2::Response.new(
-        headers: @headers,
-        body:    @data
-      )
     end
 
     def wait(timeout)
@@ -70,6 +48,13 @@ module NetHttp2
       while !@completed && Time.now < cutoff_time
         sleep 0.1
       end
+    end
+
+    def response
+      NetHttp2::Response.new(
+        headers: @headers,
+        body:    @data
+      )
     end
   end
 end

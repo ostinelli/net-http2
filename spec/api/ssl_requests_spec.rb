@@ -22,7 +22,7 @@ describe "SSL Requests" do
       res
     end
 
-    response = client.get('/path')
+    response = client.call(:get, '/path')
 
     expect(response).to be_a NetHttp2::Response
     expect(response.body).to eq "response body"
