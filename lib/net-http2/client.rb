@@ -137,7 +137,6 @@ module NetHttp2
         socket.hostname   = @uri.hostname
 
         socket.connect
-        raise "Failed to negotiate #{DRAFT} via NPN" if socket.npn_protocol != DRAFT
 
         socket
       else
