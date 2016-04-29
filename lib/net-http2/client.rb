@@ -107,27 +107,23 @@ module NetHttp2
     end
 
     def thread_loop(socket)
+
+      send_before_receiving(socket)
+
       loop do
-        if ssl?
-          available = socket.pending
-          if available > 0
-            data_received = socket.sysread(available)
-            h2 << data_received
-            break if socket.closed?
-          end
-        end
+
+        next if read_if_pending(socket)
 
         ready = IO.select([socket, @pipe_r])
+
+        if ready[0].include?(socket)
+          data_received = socket.readpartial(1024)
+          h2 << data_received
+        end
 
         if ready[0].include?(@pipe_r)
           data_to_send = @pipe_r.read_nonblock(1024)
           socket.write(data_to_send)
-        end
-
-        if ready[0].include?(socket)
-          data_received = socket.read_nonblock(1024)
-          h2 << data_received
-          break if socket.closed?
         end
       end
     end
@@ -149,12 +145,25 @@ module NetHttp2
       end
     end
 
-    def add_npn_to_context(ctx)
-      ctx.npn_protocols = [DRAFT]
-      ctx.npn_select_cb = lambda do |protocols|
-        DRAFT if protocols.include?(DRAFT)
+    def send_before_receiving(socket)
+      data_to_send = @pipe_r.read_nonblock(1024)
+      socket.write(data_to_send)
+    rescue IO::WaitReadable
+      IO.select([@pipe_r])
+      retry
+    end
+
+    def read_if_pending(socket)
+      if ssl?
+        available = socket.pending
+
+        if available > 0
+          data_received = socket.sysread(available)
+          h2 << data_received
+
+          true
+        end
       end
-      ctx
     end
 
     def h2
@@ -166,6 +175,14 @@ module NetHttp2
           end
         end
       end
+    end
+
+    def add_npn_to_context(ctx)
+      ctx.npn_protocols = [DRAFT]
+      ctx.npn_select_cb = lambda do |protocols|
+        DRAFT if protocols.include?(DRAFT)
+      end
+      ctx
     end
 
     def exit_thread(thread)
