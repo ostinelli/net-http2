@@ -5,12 +5,14 @@ require 'http/2'
 
 module NetHttp2
 
+  DRAFT = 'h2'
+
   class Client
     attr_reader :uri
 
     def initialize(url, options={})
       @uri         = URI.parse(url)
-      @ssl_context = options[:ssl_context] || OpenSSL::SSL::SSLContext.new
+      @ssl_context = add_npn_to_context(options[:ssl_context] || OpenSSL::SSL::SSLContext.new)
 
       @is_ssl = (@uri.scheme == 'https')
 
@@ -139,11 +141,20 @@ module NetHttp2
         socket.hostname   = @uri.hostname
 
         socket.connect
+        raise "Failed to negotiate #{DRAFT} via NPN" if socket.npn_protocol != DRAFT
 
         socket
       else
         tcp
       end
+    end
+
+    def add_npn_to_context(ctx)
+      ctx.npn_protocols = [DRAFT]
+      ctx.npn_select_cb = lambda do |protocols|
+        DRAFT if protocols.include?(DRAFT)
+      end
+      ctx
     end
 
     def h2

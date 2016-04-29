@@ -27,6 +27,8 @@ module NetHttp2
     class Server
       include NetHttp2::ApiHelpers
 
+      DRAFT = 'h2'
+
       attr_accessor :on_req
 
       def initialize(options={})
@@ -119,6 +121,7 @@ module NetHttp2
           ctx      = OpenSSL::SSL::SSLContext.new
           ctx.cert = OpenSSL::X509::Certificate.new(File.open(cert_file_path))
           ctx.key  = OpenSSL::PKey::RSA.new(File.open(key_file_path))
+          ctx.npn_protocols = [DRAFT]
           ctx
         end
       end
