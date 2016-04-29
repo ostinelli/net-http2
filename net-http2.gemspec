@@ -4,13 +4,15 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'net-http2/version'
 
 Gem::Specification.new do |spec|
-  spec.name     = "net-http2"
-  spec.version  = NetHttp2::VERSION
-  spec.licenses = ['MIT']
-  spec.authors  = ["Roberto Ostinelli"]
-  spec.email    = ["roberto@ostinelli.net"]
-  spec.summary  = %q{NetHttp2 is an HTTP2 client for Ruby.}
-  spec.homepage = "http://github.com/ostinelli/net-http2"
+  spec.name                  = "net-http2"
+  spec.version               = NetHttp2::VERSION
+  spec.licenses              = ['MIT']
+  spec.authors               = ["Roberto Ostinelli"]
+  spec.email                 = ["roberto@ostinelli.net"]
+  spec.summary               = %q{NetHttp2 is an HTTP2 client for Ruby.}
+  spec.homepage              = "http://github.com/ostinelli/net-http2"
+  spec.required_ruby_version = '>=2.1.0'
+
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
