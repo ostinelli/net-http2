@@ -28,7 +28,7 @@ require 'net-http2'
 client = NetHttp2::Client.new("http://106.186.112.116")
 
 # send request
-response = client.get('/')
+response = client.call(:get, '/')
 
 # read the response
 response.ok?      # => true
