@@ -130,7 +130,7 @@ The real benefit of HTTP/2 is being able to receive body and header streams. Ins
   * `:body_chunk`: triggered when body chunks are received (may be called multiple times).
   * `:close`: triggered when the request has been completed (called once).
 
- Even though NetHttp2 is thread-safe, the async callbacks will be executed in a different threads, so ensure that your code in the callbacks is thread-safe.
+ Even if NetHttp2 is thread-safe, the async callbacks will be executed in a different thread, so ensure that your code in the callbacks is thread-safe.
 
  ```ruby
  request.on(:headers) { |headers| p headers }
