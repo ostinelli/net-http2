@@ -56,19 +56,22 @@ module NetHttp2
     end
 
     def ensure_open
-      return if @socket_thread
+      @mutex.synchronize do
 
-      socket = new_socket
+        return if @socket_thread
 
-      @socket_thread = Thread.new do
+        socket = new_socket
 
-        begin
-          thread_loop(socket)
-        ensure
-          socket.close unless socket.closed?
-          @socket_thread = nil
+        @socket_thread = Thread.new do
+
+          begin
+            thread_loop(socket)
+          ensure
+            socket.close unless socket.closed?
+            @socket_thread = nil
+          end
         end
-      end.tap { |t| t.abort_on_exception = true }
+      end
     end
 
     def thread_loop(socket)
@@ -150,7 +153,7 @@ module NetHttp2
     end
 
     def exit_thread(thread)
-      return unless thread && thread.alive?
+      return unless thread
       thread.exit
       thread.join
     end

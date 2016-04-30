@@ -48,7 +48,7 @@ module NetHttp2
               handle(socket)
             end.tap { |t| t.abort_on_exception = true }
           end
-        end
+        end.tap { |t| t.abort_on_exception = true }
       end
 
       def stop
@@ -125,7 +125,7 @@ module NetHttp2
       end
 
       def exit_thread(thread)
-        return unless thread && thread.alive?
+        return unless thread
         thread.exit
         thread.join
       end
