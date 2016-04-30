@@ -92,7 +92,9 @@ These behave similarly to HTTP/1 calls.
 
 ##### Non-blocking calls
 
-> The real benefit of HTTP/2 is being able to receive body and header streams. The non-blocking API calls are currently being developed.
+> The real benefit of HTTP/2 is being able to receive body and header streams.
+> The non-blocking API calls are currently being developed in the branch
+> [async](https://github.com/ostinelli/net-http2/tree/async), so head there if you want to contribute!
 
 
 ### `NetHttp2::Response`
