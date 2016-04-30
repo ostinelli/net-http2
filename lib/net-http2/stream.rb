@@ -4,30 +4,72 @@ module NetHttp2
 
     def initialize(options={})
       @h2_stream = options[:h2_stream]
-      @uri       = options[:uri]
       @headers   = {}
       @data      = ''
+      @request   = nil
       @completed = false
-      @block     = nil
+      @async     = false
 
-      @h2_stream.on(:headers) do |hs|
-        hs.each { |k, v| @headers[k] = v }
-      end
-
-      @h2_stream.on(:data) { |d| @data << d }
-      @h2_stream.on(:close) { @completed = true }
+      listen_for_headers
+      listen_for_data
+      listen_for_close
     end
 
     def call_with(request)
-      send_data_of request
-      sync_respond(request.timeout)
+      @request = request
+      send_request_data
+      sync_respond
+    end
+
+    def async_call_with(request)
+      @request = request
+      @async   = true
+      send_request_data
+    end
+
+    def completed?
+      @completed
+    end
+
+    def async?
+      @async
     end
 
     private
 
-    def send_data_of(request)
-      headers = request.headers
-      body    = request.body
+    def listen_for_headers
+      @h2_stream.on(:headers) do |hs_array|
+        hs = Hash[*hs_array.flatten]
+
+        if async?
+          @request.emit(:headers, hs)
+        else
+          @headers.merge!(hs)
+        end
+      end
+    end
+
+    def listen_for_data
+      @h2_stream.on(:data) do |data|
+        if async?
+          @request.emit(:body_chunk, data)
+        else
+          @data << data
+        end
+      end
+    end
+
+    def listen_for_close
+      @h2_stream.on(:close) do |data|
+        @completed = true
+
+        @request.emit(:close, data) if async?
+      end
+    end
+
+    def send_request_data
+      headers = @request.headers
+      body    = @request.body
 
       if body
         @h2_stream.headers(headers, end_stream: false)
@@ -37,24 +79,18 @@ module NetHttp2
       end
     end
 
-    def sync_respond(timeout)
-      wait(timeout)
-      response if @completed
+    def sync_respond
+      wait_for_completed
+
+      NetHttp2::Response.new(headers: @headers, body: @data) if @completed
     end
 
-    def wait(timeout)
-      cutoff_time = Time.now + timeout
+    def wait_for_completed
+      cutoff_time = Time.now + @request.timeout
 
       while !@completed && Time.now < cutoff_time
         sleep 0.1
       end
-    end
-
-    def response
-      NetHttp2::Response.new(
-        headers: @headers,
-        body:    @data
-      )
     end
   end
 end

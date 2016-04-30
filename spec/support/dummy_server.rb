@@ -46,9 +46,9 @@ module NetHttp2
             Thread.start(@server.accept) do |socket|
               @threads << Thread.current
               handle(socket)
-            end
+            end.tap { |t| t.abort_on_exception = true }
           end
-        end.tap { |t| t.abort_on_exception = true }
+        end
       end
 
       def stop
@@ -84,18 +84,20 @@ module NetHttp2
           stream.on(:headers) { |h| req.import_headers(h) }
           stream.on(:data) { |d| req.body << d }
           stream.on(:half_close) do
+
             # callbacks
             res = nil
-            res = on_req.call(req) if on_req
-            res = Response.new unless res.is_a?(Response)
+            res = on_req.call(req, stream) if on_req
 
-            stream.headers({
-              ':status'        => res.headers[":status"],
-              'content-length' => res.body.bytesize.to_s,
-              'content-type'   => 'text/plain',
-            }, end_stream: false)
+            if res.is_a?(Response)
+              stream.headers({
+                ':status'        => res.headers[":status"],
+                'content-length' => res.body.bytesize.to_s,
+                'content-type'   => 'text/plain',
+              }, end_stream: false)
 
-            stream.data(res.body, end_stream: true)
+              stream.data(res.body, end_stream: true)
+            end
           end
         end
 
@@ -114,9 +116,9 @@ module NetHttp2
 
       def ssl_context
         @ssl_context ||= begin
-          ctx      = OpenSSL::SSL::SSLContext.new
-          ctx.cert = OpenSSL::X509::Certificate.new(File.open(cert_file_path))
-          ctx.key  = OpenSSL::PKey::RSA.new(File.open(key_file_path))
+          ctx               = OpenSSL::SSL::SSLContext.new
+          ctx.cert          = OpenSSL::X509::Certificate.new(File.open(cert_file_path))
+          ctx.key           = OpenSSL::PKey::RSA.new(File.open(key_file_path))
           ctx.npn_protocols = [DRAFT]
           ctx
         end

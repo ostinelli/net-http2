@@ -13,6 +13,8 @@ module NetHttp2
       @body    = options[:body]
       @headers = options[:headers] || {}
       @timeout = options[:timeout] || DEFAULT_TIMEOUT
+
+      @events = {}
     end
 
     def headers
@@ -30,8 +32,19 @@ module NetHttp2
         @headers.delete('content-length')
       end
 
-
       @headers
+    end
+
+    def on(event, &block)
+      raise ArgumentError, 'on event must provide a block' unless block_given?
+
+      @events[event] ||= []
+      @events[event] << block
+    end
+
+    def emit(event, arg)
+      return unless @events[event]
+      @events[event].each { |b| b.call(arg) }
     end
   end
 end

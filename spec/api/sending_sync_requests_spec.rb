@@ -11,7 +11,7 @@ describe "Sending sync requests" do
     server.stop
   end
 
-  it "sends GET requests with the correct parameters" do
+  it "sends a request without a body" do
     request       = nil
     server.on_req = Proc.new do |req|
       request = req
@@ -37,7 +37,7 @@ describe "Sending sync requests" do
     expect(request.headers["x-custom-header"]).to eq "custom"
   end
 
-  it "sends POST requests with the correct parameters" do
+  it "sends a request with a body" do
     request       = nil
     server.on_req = Proc.new do |req|
       request = req

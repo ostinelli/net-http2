@@ -1,10 +1,11 @@
 [![Build Status](https://travis-ci.org/ostinelli/net-http2.svg?branch=master)](https://travis-ci.org/ostinelli/net-http2)
 [![Code Climate](https://codeclimate.com/github/ostinelli/net-http2/badges/gpa.svg)](https://codeclimate.com/github/ostinelli/net-http2)
 
+> This is a WIP branch that implements async calls.
+
 # NetHttp2
 
 NetHttp2 is an HTTP/2 client for Ruby.
-
 
 ## Installation
 Just install the gem:
@@ -20,7 +21,9 @@ gem 'net-http2'
 ```
 
 ## Usage
+NetHttp2 can perform sync and async calls. Sync calls are very similar to the HTTP/1 calls, while async calls take advantage of the streaming properties of HTTP/2.
 
+To perform a sync call:
 ```ruby
 require 'net-http2'
 
@@ -40,15 +43,33 @@ response.body     # => "A body"
 client.close
 ```
 
+To perform an async call:
+```ruby
+require 'net-http2'
+
+# create a client
+client = NetHttp2::Client.new("http://106.186.112.116")
+
+# prepare request
+request = client.prepare_request(:get, '/')
+request.on(:headers) { |headers| p headers }
+request.on(:body_chunk) { |chunk| p chunk }
+request.on(:close) { puts "request completed!" }
+
+# send
+client.call_async(request)
+
+# We need to wait for the callbacks to be triggered, so here's a quick and dirty fix for this example.
+# In real life, if you are using async requests so you probably have a running loop that keeps your program alive.
+sleep 5
+
+# close the connection
+client.close
+```
 
 ## Objects
 
 ### `NetHttp2::Client`
-To create a new client:
-
-```ruby
-NetHttp2::Client.new(url)
-```
 
 #### Methods
 
@@ -57,16 +78,20 @@ NetHttp2::Client.new(url)
  Returns a new client. `url` is a `string` such as https://localhost:443.
  The only current option is `:ssl_context`, in case the url has an https scheme and you want your SSL client to use a custom context.
 
- For instance:
+ To create a new client:
+ ```ruby
+ NetHttp2::Client.new("http://106.186.112.116")
+ ```
 
-  ```ruby
-  certificate = File.read("cert.pem")
-  ctx         = OpenSSL::SSL::SSLContext.new
-  ctx.key     = OpenSSL::PKey::RSA.new(certificate, "cert_password")
-  ctx.cert    = OpenSSL::X509::Certificate.new(certificate)
+ To create a new client with a custom SSL context:
+ ```ruby
+ certificate = File.read("cert.pem")
+ ctx         = OpenSSL::SSL::SSLContext.new
+ ctx.key     = OpenSSL::PKey::RSA.new(certificate, "cert_password")
+ ctx.cert    = OpenSSL::X509::Certificate.new(certificate)
 
-  NetHttp2::Client.new(url, ssl_context: ctx)
-  ```
+ NetHttp2::Client.new("http://106.186.112.116", ssl_context: ctx)
+ ```
 
  * **uri** → **`URI`**
 
@@ -81,20 +106,68 @@ These behave similarly to HTTP/1 calls.
 
  `method` is a symbol that specifies the `:method` header (`:get`, `:post`, `:put`, `:patch`, `:delete`, `:options`). The body and the headers of the request can be specified in the options, together with the timeout.
 
-  For example:
-
-  ```ruby
-  response_1 = client.call(:get, '/path1')
-  response_2 = client.call(:get, '/path2', headers: { 'x-custom' => 'custom' })
-  response_3 = client.call(:post '/path3', body: "the request body", timeout: 1)
-  ```
+ ```ruby
+ response_1 = client.call(:get, '/path1')
+ response_2 = client.call(:get, '/path2', headers: { 'x-custom' => 'custom' })
+ response_3 = client.call(:post '/path3', body: "the request body", timeout: 1)
+ ```
 
 
 ##### Non-blocking calls
+The real benefit of HTTP/2 is being able to receive body and header streams. Instead of buffering the whole response, you might want to react immediately upon receiving those streams. This is what non-blocking calls are for.
 
-> The real benefit of HTTP/2 is being able to receive body and header streams.
-> The non-blocking API calls are currently being developed in the branch
-> [async](https://github.com/ostinelli/net-http2/tree/async), so head there if you want to contribute!
+ * **prepare_request(method, path, options={})** → **`NetHttp2::Request`**
+
+ Prepares an async request. Arguments are the same as the `call` method, with the difference that the `:timeout` option will be ignored. In an async call, you will need to write your own logic for timeouts.
+
+ ```ruby
+ request = client.prepare_request(:get, '/path', headers: { 'x-custom-header' => 'custom' })
+ ```
+
+ * **on(event, &block)** 
+
+ Allows to set a callback for the request. Available events are:
+ 
+  * `:headers`: triggered when headers are received (called once).
+  * `:body_chunk`: triggered when body chunks are received (may be called multiple times).
+  * `:close`: triggered when the request has been completed (called once).
+
+ NetHttp2 is thread-safe. However, the async callbacks will be executed in the socket thread, so ensure that your code is thread-safe too.
+
+ ```ruby
+ request.on(:headers) { |headers| p headers }
+ request.on(:body_chunk) { |chunk| p chunk }
+ request.on(:close) { puts "request completed!" }
+ ```
+
+ * **call_async(request)**
+
+ Calls the server with the async request.
+
+
+### `NetHttp2::Request`
+
+#### Methods
+
+ * **method** → **`symbol`**
+ 
+ The request's method.
+
+ * **uri** → **`URI`**
+ 
+ The request's URI.
+
+ * **path** → **`string`**
+ 
+ The request's path.
+
+ * **body** → **`string`**
+ 
+ The request's body.
+
+ * **timeout** → **`integer`**
+ 
+ The request's timeout.
 
 
 ### `NetHttp2::Response`

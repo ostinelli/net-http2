@@ -78,10 +78,10 @@ describe NetHttp2::Request do
 
         it { is_expected.to eq(
           {
-            ':scheme'        => 'http',
-            ':method'        => 'GET',
-            ':path'          => '/path',
-            'host'           => 'localhost'
+            ':scheme' => 'http',
+            ':method' => 'GET',
+            ':path'   => '/path',
+            'host'    => 'localhost'
           }
         ) }
       end
@@ -100,13 +100,32 @@ describe NetHttp2::Request do
 
         it { is_expected.to eq(
           {
-            ':scheme'        => 'http',
-            ':method'        => 'GET',
-            ':path'          => '/path',
-            'host'           => 'rob.local',
-            'x-custom'       => 'custom'
+            ':scheme'  => 'http',
+            ':method'  => 'GET',
+            ':path'    => '/path',
+            'host'     => 'rob.local',
+            'x-custom' => 'custom'
           }
         ) }
+      end
+    end
+  end
+
+  describe "Events subscription & emission" do
+
+    [
+      :headers,
+      :body_chunk,
+      :close
+    ].each do |event|
+      it "subscribes and emits for event #{event}" do
+        calls = []
+        request.on(:headers) { calls << :one }
+        request.on(:headers) { calls << :two }
+
+        request.emit(:headers, "param")
+
+        expect(calls).to match_array [:one, :two]
       end
     end
   end

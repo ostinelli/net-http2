@@ -22,9 +22,18 @@ module NetHttp2
     end
 
     def call(method, path, options={})
-      request = NetHttp2::Request.new(method, @uri, path, options)
+      request = prepare_request(method, path, options)
       ensure_open
       new_stream.call_with request
+    end
+
+    def call_async(request)
+      ensure_open
+      new_stream.async_call_with request
+    end
+
+    def prepare_request(method, path, options={})
+      NetHttp2::Request.new(method, @uri, path, options)
     end
 
     def ssl?
@@ -59,7 +68,7 @@ module NetHttp2
           socket.close unless socket.closed?
           @socket_thread = nil
         end
-      end
+      end.tap { |t| t.abort_on_exception = true }
     end
 
     def thread_loop(socket)
