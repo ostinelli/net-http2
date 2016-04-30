@@ -87,7 +87,7 @@ module NetHttp2
         end
 
         if ready[0].include?(@pipe_r)
-          data_to_send = @pipe_r.read_nonblock(1024)
+          data_to_send = @pipe_r.readpartial(1024)
           socket.write(data_to_send)
         end
       end
