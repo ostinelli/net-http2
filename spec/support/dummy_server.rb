@@ -86,8 +86,14 @@ module NetHttp2
           stream.on(:half_close) do
 
             # callbacks
-            res = nil
-            res = on_req.call(req, stream) if on_req
+            res = if on_req
+              on_req.call(req, stream)
+            else
+              r                    = NetHttp2::Dummy::Response.new
+              r.headers[":status"] = "200"
+              r.body               = "response for #{req.headers[':path']}"
+              r
+            end
 
             if res.is_a?(Response)
               stream.headers({

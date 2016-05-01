@@ -70,7 +70,7 @@ module NetHttp2
             socket.close unless socket.closed?
             @socket_thread = nil
           end
-        end
+        end.tap { |t| t.abort_on_exception = true }
       end
     end
 
