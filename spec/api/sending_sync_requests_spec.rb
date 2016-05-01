@@ -6,6 +6,7 @@ describe "Sending sync requests" do
   let(:client) { NetHttp2::Client.new("http://localhost:#{port}") }
 
   before { server.listen }
+
   after do
     client.close
     server.stop
@@ -16,10 +17,10 @@ describe "Sending sync requests" do
     server.on_req = Proc.new do |req|
       request = req
 
-      res                    = NetHttp2::Dummy::Response.new
-      res.headers[":status"] = "200"
-      res.body               = "response body"
-      res
+      NetHttp2::Response.new(
+        headers: { ":status" => "200" },
+        body:    "response body"
+      )
     end
 
     response = client.call(:get, '/path',
@@ -42,10 +43,10 @@ describe "Sending sync requests" do
     server.on_req = Proc.new do |req|
       request = req
 
-      res                    = NetHttp2::Dummy::Response.new
-      res.headers[":status"] = "200"
-      res.body               = "response body"
-      res
+      NetHttp2::Response.new(
+        headers: { ":status" => "200" },
+        body:    "response body"
+      )
     end
 
     response = client.call(:post, '/path',
@@ -71,10 +72,10 @@ describe "Sending sync requests" do
     server.on_req = Proc.new do |req|
       requests << req
 
-      res                    = NetHttp2::Dummy::Response.new
-      res.headers[":status"] = "200"
-      res.body               = "response for #{req.headers[':path']}"
-      res
+      NetHttp2::Response.new(
+        headers: { ":status" => "200" },
+        body:    "response for #{req.headers[':path']}"
+      )
     end
 
     response_1 = client.call(:get, '/path1')
@@ -95,10 +96,10 @@ describe "Sending sync requests" do
     server.on_req = Proc.new do |req|
       requests << req
 
-      res                    = NetHttp2::Dummy::Response.new
-      res.headers[":status"] = "200"
-      res.body               = "response for #{req.headers[':path']}"
-      res
+      NetHttp2::Response.new(
+        headers: { ":status" => "200" },
+        body:    "response for #{req.headers[':path']}"
+      )
     end
 
     response_1 = nil

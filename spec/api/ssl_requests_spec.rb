@@ -11,15 +11,15 @@ describe "SSL Requests" do
     server.stop
   end
 
-  it "sends SSL GET requests with the correct parameters" do
+  it "sends SSL GET requests" do
     request       = nil
     server.on_req = Proc.new do |req|
       request = req
 
-      res                    = NetHttp2::Dummy::Response.new
-      res.headers[":status"] = "200"
-      res.body               = "response body"
-      res
+      NetHttp2::Response.new(
+        headers: { ":status" => "200" },
+        body:    "response body"
+      )
     end
 
     response = client.call(:get, '/path')

@@ -6,6 +6,7 @@ describe "Sending async requests" do
   let(:client) { NetHttp2::Client.new("http://localhost:#{port}") }
 
   before { server.listen }
+
   after do
     client.close
     server.stop

@@ -15,15 +15,6 @@ module NetHttp2
       end
     end
 
-    class Response
-      attr_accessor :body, :headers
-
-      def initialize
-        @headers = { ":status" => "200" }
-        @body    = ''
-      end
-    end
-
     class Server
       include NetHttp2::ApiHelpers
 
@@ -79,7 +70,7 @@ module NetHttp2
         conn.on(:frame) { |bytes| socket.write(bytes) }
 
         conn.on(:stream) do |stream|
-          req = Request.new
+          req = NetHttp2::Dummy::Request.new
 
           stream.on(:headers) { |h| req.import_headers(h) }
           stream.on(:data) { |d| req.body << d }
@@ -89,10 +80,10 @@ module NetHttp2
             res = if on_req
               on_req.call(req, stream)
             else
-              r                    = NetHttp2::Dummy::Response.new
-              r.headers[":status"] = "200"
-              r.body               = "response for #{req.headers[':path']}"
-              r
+              NetHttp2::Response.new(
+                headers: { ":status" => "200" },
+                body:    "response body"
+              )
             end
 
             if res.is_a?(Response)

@@ -6,7 +6,7 @@ module NetHttp2
 
     attr_reader :method, :uri, :path, :body, :timeout
 
-    def initialize(method, uri, path, options)
+    def initialize(method, uri, path, options={})
       @method  = method
       @uri     = uri
       @path    = path
