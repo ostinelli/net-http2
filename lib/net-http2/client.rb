@@ -141,6 +141,13 @@ module NetHttp2
             @pipe_w.flush
           end
         end
+
+        h2.on(:frame_sent) do |frame|
+          puts "CLIENT Sent frame: #{frame.inspect}"
+        end
+        h2.on(:frame_received) do |frame|
+          puts "CLIENT Received frame: #{frame.inspect}"
+        end
       end
     end
 

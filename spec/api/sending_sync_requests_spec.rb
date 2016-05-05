@@ -133,4 +133,22 @@ describe "Sending sync requests" do
     expect(response).to be_a NetHttp2::Response
     expect(response.body).to eq big_body
   end
+
+  it "sends POST requests with big bodies" do
+    received_body = nil
+    server.on_req = Proc.new do |req|
+      received_body = req.body
+
+      NetHttp2::Response.new(
+        headers: { ":status" => "200" },
+        body:    "response ok"
+      )
+    end
+
+    big_body = "a" * 100_000
+    response = client.call(:post, '/path', body: big_body, timeout: 5)
+
+    expect(response).to be_a NetHttp2::Response
+    expect(received_body).to eq big_body
+  end
 end

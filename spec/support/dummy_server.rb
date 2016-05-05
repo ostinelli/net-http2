@@ -69,11 +69,18 @@ module NetHttp2
 
         conn.on(:frame) { |bytes| socket.write(bytes) }
 
+        conn.on(:frame_sent) do |frame|
+          puts "SERVER Sent frame: #{frame.inspect}"
+        end
+        conn.on(:frame_received) do |frame|
+          puts "SERVER Received frame: #{frame.inspect}"
+        end
+
         conn.on(:stream) do |stream|
           req = NetHttp2::Dummy::Request.new
 
-          stream.on(:headers) { |h| req.import_headers(h) }
-          stream.on(:data) { |d| req.body << d }
+          stream.on(:headers) { |h| puts "SERVER HEADERS: #{h}"; req.import_headers(h) }
+          stream.on(:data) { |d| puts "SERVER DATA: #{d}"; req.body << d }
           stream.on(:half_close) do
 
             # callbacks
