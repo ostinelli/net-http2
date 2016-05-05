@@ -117,4 +117,20 @@ describe "Sending sync requests" do
     expect(request_1).not_to be_nil
     expect(request_2).not_to be_nil
   end
+
+  it "sends GET requests and receives big bodies" do
+    big_body = "a" * 100_000
+
+    server.on_req = Proc.new do |_req|
+      NetHttp2::Response.new(
+        headers: { ":status" => "200" },
+        body:    big_body.dup
+      )
+    end
+
+    response = client.call(:get, '/path', timeout: 5)
+
+    expect(response).to be_a NetHttp2::Response
+    expect(response.body).to eq big_body
+  end
 end
