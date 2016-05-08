@@ -59,7 +59,8 @@ request.on(:close) { puts "request completed!" }
 client.call_async(request)
 
 # We need to wait for the callbacks to be triggered, so here's a quick and dirty fix for this example.
-# In real life, if you are using async requests so you probably have a running loop that keeps your program alive.
+# In real life, if you are using async requests you probably have a running loop that keeps
+# your program alive.
 sleep 5
 
 # close the connection
@@ -108,7 +109,7 @@ These behave similarly to HTTP/1 calls.
  ```ruby
  response_1 = client.call(:get, '/path1')
  response_2 = client.call(:get, '/path2', headers: { 'x-custom' => 'custom' })
- response_3 = client.call(:post '/path3', body: "the request body", timeout: 1)
+ response_3 = client.call(:post, '/path3', body: "the request body", timeout: 1)
  ```
 
 
@@ -123,10 +124,10 @@ The real benefit of HTTP/2 is being able to receive body and header streams. Ins
  request = client.prepare_request(:get, '/path', headers: { 'x-custom-header' => 'custom' })
  ```
 
- * **on(event, &block)** 
+ * **on(event, &block)**
 
  Allows to set a callback for the request. Available events are:
- 
+
   * `:headers`: triggered when headers are received (called once).
   * `:body_chunk`: triggered when body chunks are received (may be called multiple times).
   * `:close`: triggered when the request has been completed (called once).
@@ -149,23 +150,23 @@ The real benefit of HTTP/2 is being able to receive body and header streams. Ins
 #### Methods
 
  * **method** → **`symbol`**
- 
+
  The request's method.
 
  * **uri** → **`URI`**
- 
+
  The request's URI.
 
  * **path** → **`string`**
- 
+
  The request's path.
 
  * **body** → **`string`**
- 
+
  The request's body.
 
  * **timeout** → **`integer`**
- 
+
  The request's timeout.
 
 
