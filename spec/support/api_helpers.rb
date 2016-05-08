@@ -1,7 +1,7 @@
 module NetHttp2
 
   module ApiHelpers
-    WAIT_INTERVAL = 0.2
+    WAIT_INTERVAL = 0.5
 
     def wait_for(seconds=2, &block)
       count = 1 / WAIT_INTERVAL
