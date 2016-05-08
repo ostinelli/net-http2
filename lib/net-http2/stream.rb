@@ -62,7 +62,6 @@ module NetHttp2
     def listen_for_close
       @h2_stream.on(:close) do |data|
         @completed = true
-
         @request.emit(:close, data) if async?
       end
     end
@@ -70,6 +69,7 @@ module NetHttp2
     def send_request_data
       headers = @request.headers
       body    = @request.body
+
       if body
         @h2_stream.headers(headers, end_stream: false)
         @h2_stream.data(body, end_stream: true)

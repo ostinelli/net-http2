@@ -84,6 +84,7 @@ module NetHttp2
       ensure_sent_before_receiving
 
       loop do
+
         begin
           data_received = @socket.read_nonblock(1024)
           h2 << data_received
