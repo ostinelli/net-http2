@@ -69,6 +69,7 @@ module NetHttp2
           begin
             socket_loop
           rescue EOFError
+            # socket closed
           ensure
             @socket.close unless @socket.closed?
             @socket        = nil
