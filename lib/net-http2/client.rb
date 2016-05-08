@@ -16,9 +16,7 @@ module NetHttp2
 
       @is_ssl = (@uri.scheme == 'https')
 
-      @pipe_r, @pipe_w = Socket.pair(:UNIX, :STREAM, 0)
-      @socket_thread   = nil
-      @mutex           = Mutex.new
+      init_vars
     end
 
     def call(method, path, options={})
@@ -42,14 +40,18 @@ module NetHttp2
 
     def close
       exit_thread(@socket_thread)
-
-      @h2            = nil
-      @pipe_r        = nil
-      @pipe_w        = nil
-      @socket_thread = nil
+      init_vars
     end
 
     private
+
+    def init_vars
+      @h2              = nil
+      @socket          = nil
+      @socket_thread   = nil
+      @first_data_sent = false
+      @mutex           = Mutex.new
+    end
 
     def new_stream
       NetHttp2::Stream.new(uri: @uri, h2_stream: h2.new_stream)
@@ -60,38 +62,36 @@ module NetHttp2
 
         return if @socket_thread
 
-        socket = new_socket
+        @socket = new_socket
 
         @socket_thread = Thread.new do
 
           begin
-            thread_loop(socket)
+            socket_loop
+          rescue EOFError
           ensure
-            socket.close unless socket.closed?
+            @socket.close unless @socket.closed?
+            @socket        = nil
             @socket_thread = nil
           end
         end.tap { |t| t.abort_on_exception = true }
       end
     end
 
-    def thread_loop(socket)
+    def socket_loop
 
-      send_before_receiving(socket)
+      ensure_sent_before_receiving
 
       loop do
-
-        next if read_if_pending(socket)
-
-        ready = IO.select([socket, @pipe_r])
-
-        if ready[0].include?(socket)
-          data_received = socket.readpartial(1024)
+        begin
+          data_received = @socket.read_nonblock(1024)
           h2 << data_received
-        end
-
-        if ready[0].include?(@pipe_r)
-          data_to_send = @pipe_r.readpartial(1024)
-          socket.write(data_to_send)
+        rescue IO::WaitReadable
+          IO.select([@socket])
+          retry
+        rescue IO::WaitWritable
+          IO.select(nil, [@socket])
+          retry
         end
       end
     end
@@ -112,24 +112,9 @@ module NetHttp2
       end
     end
 
-    def send_before_receiving(socket)
-      data_to_send = @pipe_r.read_nonblock(1024)
-      socket.write(data_to_send)
-    rescue IO::WaitReadable
-      IO.select([@pipe_r])
-      retry
-    end
-
-    def read_if_pending(socket)
-      if ssl?
-        available = socket.pending
-
-        if available > 0
-          data_received = socket.sysread(available)
-          h2 << data_received
-
-          true
-        end
+    def ensure_sent_before_receiving
+      while !@first_data_sent
+        sleep 0.1
       end
     end
 
@@ -137,16 +122,11 @@ module NetHttp2
       @h2 ||= HTTP2::Client.new.tap do |h2|
         h2.on(:frame) do |bytes|
           @mutex.synchronize do
-            @pipe_w.write(bytes)
-            @pipe_w.flush
-          end
-        end
+            @socket.write(bytes)
+            @socket.flush
 
-        h2.on(:frame_sent) do |frame|
-          puts "CLIENT Sent frame: #{frame.inspect}"
-        end
-        h2.on(:frame_received) do |frame|
-          puts "CLIENT Received frame: #{frame.inspect}"
+            @first_data_sent = true
+          end
         end
       end
     end
