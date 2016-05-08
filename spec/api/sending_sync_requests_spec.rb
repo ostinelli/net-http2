@@ -146,9 +146,10 @@ describe "Sending sync requests" do
     end
 
     big_body = "a" * 100_000
+    expected_body = big_body.dup
     response = client.call(:post, '/path', body: big_body, timeout: 5)
 
     expect(response).to be_a NetHttp2::Response
-    expect(received_body).to eq big_body
+    expect(received_body).to eq expected_body
   end
 end
