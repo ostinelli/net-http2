@@ -32,4 +32,20 @@ describe NetHttp2::Client do
       end
     end
   end
+
+  describe "#ssl?" do
+    let(:client) { NetHttp2::Client.new(url) }
+
+    subject { client.ssl? }
+
+    context "when URL has an http scheme" do
+      let(:url) { "http://localhost" }
+      it { is_expected.to eq false }
+    end
+
+    context "when URL has an https scheme" do
+      let(:url) { "https://localhost" }
+      it { is_expected.to eq true }
+    end
+  end
 end
