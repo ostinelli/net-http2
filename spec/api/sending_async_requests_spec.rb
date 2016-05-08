@@ -12,7 +12,7 @@ describe "Sending async requests" do
     server.stop
   end
 
-  it "sends async a request without a body" do
+  it "sends an async request without a body" do
     incoming_request = nil
     reply_done       = false
     server.on_req    = Proc.new do |req, stream|
@@ -63,7 +63,7 @@ describe "Sending async requests" do
     expect(incoming_request.headers["x-custom-header"]).to eq "custom"
   end
 
-  it "sends async a request with a body" do
+  it "sends an async request with a body" do
     incoming_request = nil
     reply_done       = false
     server.on_req    = Proc.new do |req, stream|
@@ -117,7 +117,7 @@ describe "Sending async requests" do
     expect(incoming_request.body).to eq "request body"
   end
 
-  it "sends multiple requests sequentially" do
+  it "sends multiple async requests sequentially" do
     replies_done  = 0
     server.on_req = Proc.new do |req, stream|
       body_chunk_1 = "response body for #{req.headers[':path']}"
@@ -174,7 +174,7 @@ describe "Sending async requests" do
     expect(completed_2).to eq true
   end
 
-  it "sends multiple requests concurrently" do
+  it "sends multiple async requests concurrently" do
     replies_done  = 0
     server.on_req = Proc.new do |req, stream|
       body_chunk_1 = "response body for #{req.headers[':path']}"
@@ -212,7 +212,7 @@ describe "Sending async requests" do
     request_2.on(:close) { completed_2 = true }
 
     client.call_async(request_1)
-    thread     = Thread.new { client.call_async(request_2) }
+    thread = Thread.new { client.call_async(request_2) }
     thread.join
 
     wait_for { replies_done == 2 }
@@ -230,5 +230,79 @@ describe "Sending async requests" do
 
     expect(completed_1).to eq true
     expect(completed_2).to eq true
+  end
+
+  it "sends an async request without a body and receives big bodies" do
+    big_body = "a" * 100_000
+
+    reply_done       = false
+    server.on_req = Proc.new do |_req|
+      reply_done = true
+
+      NetHttp2::Response.new(
+        headers: { ":status" => "200" },
+        body:    big_body.dup
+      )
+    end
+
+    request = client.prepare_request(:get, '/path')
+
+    headers   = nil
+    body      = ''
+    completed = false
+    request.on(:headers) { |hs| headers = hs }
+    request.on(:body_chunk) { |chunk| body << chunk }
+    request.on(:close) { completed = true }
+
+    expect(request).to be_a NetHttp2::Request
+
+    client.call_async(request)
+
+    wait_for { reply_done }
+
+    expect(headers).to_not be_nil
+    expect(headers[':status']).to eq "200"
+    expect(headers['content-length']).to eq "100000"
+
+    expect(body).to eq big_body
+    expect(completed).to eq true
+  end
+
+  it "sends an async POST requests with big bodies" do
+    big_body = "a" * 100_000
+
+    received_body = nil
+    server.on_req = Proc.new do |req|
+      received_body = req.body
+
+      NetHttp2::Response.new(
+        headers: { ":status" => "200" },
+        body:    "response body"
+      )
+    end
+
+    request = client.prepare_request(:post, '/path', body: big_body.dup)
+
+    headers   = nil
+    body      = ''
+    completed = false
+    request.on(:headers) { |hs| headers = hs }
+    request.on(:body_chunk) { |chunk| body << chunk }
+    request.on(:close) { completed = true }
+
+    expect(request).to be_a NetHttp2::Request
+
+    client.call_async(request)
+
+    wait_for { !received_body.nil? }
+
+    expect(received_body).to eq big_body
+
+    expect(headers).to_not be_nil
+    expect(headers[':status']).to eq "200"
+    expect(headers['content-length']).to eq "13"
+
+    expect(body).to eq "response body"
+    expect(completed).to eq true
   end
 end

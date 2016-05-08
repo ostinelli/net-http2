@@ -35,7 +35,7 @@ describe "SSL Requests" do
   end
 
   it "sends SSL GET requests and receives big bodies" do
-    big_body = "a" * 50000
+    big_body = "a" * 100_000
 
     request       = nil
     server.on_req = Proc.new do |req|
@@ -57,5 +57,23 @@ describe "SSL Requests" do
     expect(request.headers[":method"]).to eq "GET"
     expect(request.headers[":path"]).to eq "/path"
     expect(request.headers["host"]).to eq "localhost"
+  end
+
+  it "sends SSL POST requests with big bodies" do
+    received_body = nil
+    server.on_req = Proc.new do |req|
+      received_body = req.body
+
+      NetHttp2::Response.new(
+        headers: { ":status" => "200" },
+        body:    "response ok"
+      )
+    end
+
+    big_body = "a" * 100_000
+    response = client.call(:post, '/path', body: big_body.dup, timeout: 5)
+
+    expect(response).to be_a NetHttp2::Response
+    expect(received_body).to eq big_body
   end
 end
