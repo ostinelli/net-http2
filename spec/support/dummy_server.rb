@@ -68,14 +68,6 @@ module NetHttp2
         conn = HTTP2::Server.new
 
         conn.on(:frame) { |bytes| socket.write(bytes) }
-
-        conn.on(:frame_sent) do |frame|
-          puts "SERVER Sent frame: #{frame.inspect}"
-        end
-        conn.on(:frame_received) do |frame|
-          puts "SERVER Received frame: #{frame.inspect}"
-        end
-
         conn.on(:stream) do |stream|
           req = NetHttp2::Dummy::Request.new
 
@@ -110,7 +102,6 @@ module NetHttp2
           conn << data
         end
 
-        puts "EXITING TEST"
         socket.close unless socket.closed?
       end
 

@@ -71,13 +71,8 @@ module NetHttp2
       headers = @request.headers
       body    = @request.body
       if body
-        puts "-----> SENDING HEADERS\r\n"
         @h2_stream.headers(headers, end_stream: false)
-
-        sleep 1
-        puts "\r\n-----> SENDING BODY\r\n"
         @h2_stream.data(body, end_stream: true)
-        puts "SEND DONE"
       else
         @h2_stream.headers(headers, end_stream: true)
       end
