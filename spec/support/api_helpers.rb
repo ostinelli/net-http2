@@ -1,11 +1,14 @@
 module NetHttp2
 
   module ApiHelpers
+    WAIT_INTERVAL = 0.2
 
     def wait_for(seconds=2, &block)
-      (0..seconds).each do
+      count = 1 / WAIT_INTERVAL
+
+      (0..(count * seconds)).each do
         break if block.call
-        sleep 1
+        sleep WAIT_INTERVAL
       end
     end
   end
