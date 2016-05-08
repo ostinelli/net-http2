@@ -27,7 +27,7 @@ To perform a sync call:
 require 'net-http2'
 
 # create a client
-client = NetHttp2::Client.new("http://106.186.112.116")
+client = NetHttp2::Client.new("http://nghttp2.org")
 
 # send request
 response = client.call(:get, '/')
@@ -47,7 +47,7 @@ To perform an async call:
 require 'net-http2'
 
 # create a client
-client = NetHttp2::Client.new("http://106.186.112.116")
+client = NetHttp2::Client.new("http://nghttp2.org")
 
 # prepare request
 request = client.prepare_request(:get, '/')
@@ -74,12 +74,12 @@ client.close
 
  * **new(url, options={})** → **`NetHttp2::Client`**
 
- Returns a new client. `url` is a `string` such as https://localhost:443.
+ Returns a new client. `url` is a `string` such as `http://nghttp2.org`.
  The only current option is `:ssl_context`, in case the url has an https scheme and you want your SSL client to use a custom context.
 
  To create a new client:
  ```ruby
- NetHttp2::Client.new("http://106.186.112.116")
+ NetHttp2::Client.new("http://nghttp2.org")
  ```
 
  To create a new client with a custom SSL context:
@@ -89,7 +89,7 @@ client.close
  ctx.key     = OpenSSL::PKey::RSA.new(certificate, "cert_password")
  ctx.cert    = OpenSSL::X509::Certificate.new(certificate)
 
- NetHttp2::Client.new("http://106.186.112.116", ssl_context: ctx)
+ NetHttp2::Client.new("https://nghttp2.org", ssl_context: ctx)
  ```
 
  * **uri** → **`URI`**
