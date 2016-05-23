@@ -6,8 +6,6 @@ module NetHttp2
       options[:ssl] ? ssl_socket(uri, options) : tcp_socket(uri, options)
     end
 
-    private
-
     def self.ssl_socket(uri, options)
       tcp = tcp_socket(uri, options)
 
