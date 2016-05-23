@@ -67,7 +67,7 @@ module NetHttp2
         @completed = true
 
         if async?
-          @request.emit(:close, data) if async?
+          @request.emit(:close, data)
         else
           @mutex.synchronize { @cv.signal }
         end
