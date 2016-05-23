@@ -10,7 +10,7 @@ describe "Timeouts during connection" do
   end
 
   context "on non-SSL connections" do
-    let(:scheme) { 'http'}
+    let(:scheme) { 'http' }
 
     it "raises after the custom timeout on tcp connections" do
       started_at = Time.now
@@ -25,7 +25,7 @@ describe "Timeouts during connection" do
   end
 
   context "on SSL connections" do
-    let(:scheme) { 'https'}
+    let(:scheme) { 'https' }
 
     it "raises after the custom timeout on SSL connections" do
       started_at = Time.now
