@@ -116,7 +116,7 @@ module NetHttp2
 
     def ensure_sent_before_receiving
       while !@first_data_sent
-        sleep 0.1
+        sleep 0.01
       end
     end
 

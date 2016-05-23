@@ -7,7 +7,7 @@ describe "Timeouts with sync requests" do
 
   before do
     server.listen
-    server.on_req = Proc.new { |_req| sleep 2 }
+    server.on_req = Proc.new { |_req| sleep 3 }
   end
 
   after do
@@ -42,5 +42,16 @@ describe "Timeouts with sync requests" do
     expect(time_taken < 2).to eq true
 
     expect(responses.compact).to be_empty
+  end
+
+  it "returns nil even if the client's main thread gets killed" do
+
+    Thread.new do
+      sleep 1
+      client.close
+    end
+
+    response = client.call(:get, '/path', headers: { 'x-custom-header' => 'custom' }, timeout: 2)
+    expect(response).to be_nil
   end
 end

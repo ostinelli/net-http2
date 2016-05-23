@@ -7,8 +7,11 @@ module NetHttp2
       @headers   = {}
       @data      = ''
       @request   = nil
-      @completed = false
       @async     = false
+      @completed = false
+      @mutex     = Mutex.new
+      @cv        = ConditionVariable.new
+
 
       listen_for_headers
       listen_for_data
@@ -62,7 +65,12 @@ module NetHttp2
     def listen_for_close
       @h2_stream.on(:close) do |data|
         @completed = true
-        @request.emit(:close, data) if async?
+
+        if async?
+          @request.emit(:close, data) if async?
+        else
+          @mutex.synchronize { @cv.signal }
+        end
       end
     end
 
@@ -85,11 +93,7 @@ module NetHttp2
     end
 
     def wait_for_completed
-      cutoff_time = Time.now + @request.timeout
-
-      while !@completed && Time.now < cutoff_time
-        sleep 0.1
-      end
+      @mutex.synchronize { @cv.wait(@mutex, @request.timeout) }
     end
   end
 end
