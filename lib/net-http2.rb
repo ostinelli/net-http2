@@ -1,6 +1,7 @@
 require 'net-http2/client'
 require 'net-http2/response'
 require 'net-http2/request'
+require 'net-http2/socket'
 require 'net-http2/stream'
 require 'net-http2/version'
 

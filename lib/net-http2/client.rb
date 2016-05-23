@@ -100,48 +100,7 @@ module NetHttp2
     end
 
     def new_socket
-      tcp = tcp_socket
-
-      if ssl?
-        socket            = OpenSSL::SSL::SSLSocket.new(tcp, @ssl_context)
-        socket.sync_close = true
-        socket.hostname   = @uri.hostname
-
-        socket.connect
-
-        socket
-      else
-        tcp
-      end
-    end
-
-    def tcp_socket
-      family   = Socket::AF_INET
-      address  = Socket.getaddrinfo(@uri.host, nil, family).first[3]
-      sockaddr = Socket.pack_sockaddr_in(@uri.port, address)
-
-      socket = Socket.new(family, Socket::SOCK_STREAM, 0)
-      socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
-
-      begin
-        socket.connect_nonblock(sockaddr)
-      rescue IO::WaitWritable
-        if IO.select(nil, [socket], nil, @connect_timeout)
-          begin
-            socket.connect_nonblock(sockaddr)
-          rescue Errno::EISCONN
-            # socket is connected
-          rescue
-            socket.close
-            raise
-          end
-        else
-          socket.close
-          raise Errno::ETIMEDOUT
-        end
-      end
-
-      socket
+      NetHttp2::Socket.create(@uri, ssl: ssl?, ssl_context: @ssl_context, connect_timeout: @connect_timeout)
     end
 
     def ensure_sent_before_receiving
