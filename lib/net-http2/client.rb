@@ -11,8 +11,9 @@ module NetHttp2
     attr_reader :uri
 
     def initialize(url, options={})
-      @uri         = URI.parse(url)
-      @ssl_context = add_npn_to_context(options[:ssl_context] || OpenSSL::SSL::SSLContext.new)
+      @uri             = URI.parse(url)
+      @connect_timeout = options[:connect_timeout] || 60
+      @ssl_context     = add_npn_to_context(options[:ssl_context] || OpenSSL::SSL::SSLContext.new)
 
       @is_ssl = (@uri.scheme == 'https')
 
@@ -99,7 +100,7 @@ module NetHttp2
     end
 
     def new_socket
-      tcp = TCPSocket.new(@uri.host, @uri.port)
+      tcp = tcp_socket
 
       if ssl?
         socket            = OpenSSL::SSL::SSLSocket.new(tcp, @ssl_context)
@@ -112,6 +113,35 @@ module NetHttp2
       else
         tcp
       end
+    end
+
+    def tcp_socket
+      family   = Socket::AF_INET
+      address  = Socket.getaddrinfo(@uri.host, nil, family).first[3]
+      sockaddr = Socket.pack_sockaddr_in(@uri.port, address)
+
+      socket = Socket.new(family, Socket::SOCK_STREAM, 0)
+      socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+
+      begin
+        socket.connect_nonblock(sockaddr)
+      rescue IO::WaitWritable
+        if IO.select(nil, [socket], nil, @connect_timeout)
+          begin
+            socket.connect_nonblock(sockaddr)
+          rescue Errno::EISCONN
+            # socket is connected
+          rescue
+            socket.close
+            raise
+          end
+        else
+          socket.close
+          raise Errno::ETIMEDOUT
+        end
+      end
+
+      socket
     end
 
     def ensure_sent_before_receiving

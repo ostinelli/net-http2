@@ -76,7 +76,10 @@ client.close
  * **new(url, options={})** → **`NetHttp2::Client`**
 
  Returns a new client. `url` is a `string` such as `http://nghttp2.org`.
- The only current option is `:ssl_context`, in case the url has an https scheme and you want your SSL client to use a custom context.
+ The current options are:
+ 
+  * `:connect_timeout`, specifies the max connect timeout in seconds (defaults to 60).
+  * `:ssl_context`, in case the url has an https scheme and you want your SSL client to use a custom context.
 
  To create a new client:
  ```ruby
