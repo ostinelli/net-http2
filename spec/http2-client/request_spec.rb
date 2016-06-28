@@ -120,10 +120,10 @@ describe NetHttp2::Request do
     ].each do |event|
       it "subscribes and emits for event #{event}" do
         calls = []
-        request.on(:headers) { calls << :one }
-        request.on(:headers) { calls << :two }
+        request.on(event) { calls << :one }
+        request.on(event) { calls << :two }
 
-        request.emit(:headers, "param")
+        request.emit(event, "param")
 
         expect(calls).to match_array [:one, :two]
       end
