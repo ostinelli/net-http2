@@ -69,14 +69,15 @@ module NetHttp2
 
           begin
             socket_loop
-          rescue EOFError
+          rescue Exception => e
             # socket closed
+            Thread.main.raise e
           ensure
             @socket.close unless @socket.closed?
             @socket        = nil
             @socket_thread = nil
           end
-        end.tap { |t| t.abort_on_exception = true }
+        end
       end
     end
 
