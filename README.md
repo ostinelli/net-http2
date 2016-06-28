@@ -113,7 +113,6 @@ These behave similarly to HTTP/1 calls.
  response_3 = client.call(:post, '/path3', body: "the request body", timeout: 1)
  ```
 
-
 ##### Non-blocking calls
 The real benefit of HTTP/2 is being able to receive body and header streams. Instead of buffering the whole response, you might want to react immediately upon receiving those streams. This is what non-blocking calls are for.
 
@@ -125,25 +124,13 @@ The real benefit of HTTP/2 is being able to receive body and header streams. Ins
  request = client.prepare_request(:get, '/path', headers: { 'x-custom-header' => 'custom' })
  ```
 
- * **on(event, &block)**
-
- Allows to set a callback for the request. Available events are:
-
-  * `:headers`: triggered when headers are received (called once).
-  * `:body_chunk`: triggered when body chunks are received (may be called multiple times).
-  * `:close`: triggered when the request has been completed (called once).
-
- Even if NetHttp2 is thread-safe, the async callbacks will be executed in a different thread, so ensure that your code in the callbacks is thread-safe.
-
- ```ruby
- request.on(:headers) { |headers| p headers }
- request.on(:body_chunk) { |chunk| p chunk }
- request.on(:close) { puts "request completed!" }
- ```
-
  * **call_async(request)**
 
  Calls the server with the async request.
+
+ * **join**
+
+ Wait for all outstanding requests to be completed.
 
 
 ### `NetHttp2::Request`
@@ -169,6 +156,22 @@ The real benefit of HTTP/2 is being able to receive body and header streams. Ins
  * **timeout** → **`integer`**
 
  The request's timeout.
+
+ * **on(event, &block)**
+
+ Allows to set a callback for the request. Available events are:
+
+  * `:headers`: triggered when headers are received (called once).
+  * `:body_chunk`: triggered when body chunks are received (may be called multiple times).
+  * `:close`: triggered when the request has been completed (called once).
+
+ Even if NetHttp2 is thread-safe, the async callbacks will be executed in a different thread, so ensure that your code in the callbacks is thread-safe.
+
+ ```ruby
+ request.on(:headers) { |headers| p headers }
+ request.on(:body_chunk) { |chunk| p chunk }
+ request.on(:close) { puts "request completed!" }
+ ```
 
 
 ### `NetHttp2::Response`
