@@ -113,7 +113,6 @@ These behave similarly to HTTP/1 calls.
  response_3 = client.call(:post, '/path3', body: "the request body", timeout: 1)
  ```
 
-
 ##### Non-blocking calls
 The real benefit of HTTP/2 is being able to receive body and header streams. Instead of buffering the whole response, you might want to react immediately upon receiving those streams. This is what non-blocking calls are for.
 
@@ -144,6 +143,10 @@ The real benefit of HTTP/2 is being able to receive body and header streams. Ins
  * **call_async(request)**
 
  Calls the server with the async request.
+
+ * **join**
+
+ Wait for all outstanding requests to be completed.
 
 
 ### `NetHttp2::Request`
