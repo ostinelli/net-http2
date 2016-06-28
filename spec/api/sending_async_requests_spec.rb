@@ -14,7 +14,6 @@ describe "Sending async requests" do
 
   it "sends an async request without a body" do
     incoming_request = nil
-    reply_done       = false
     server.on_req    = Proc.new do |req, stream|
       incoming_request = req
 
@@ -28,8 +27,6 @@ describe "Sending async requests" do
 
       stream.data(body_chunk_1, end_stream: false)
       stream.data(body_chunk_2, end_stream: true)
-
-      reply_done = true
     end
 
     request = client.prepare_request(:get, '/path', headers: { 'x-custom-header' => 'custom' })
@@ -44,8 +41,7 @@ describe "Sending async requests" do
     expect(request).to be_a NetHttp2::Request
 
     client.call_async(request)
-
-    wait_for { reply_done }
+    client.join
 
     expect(headers).to_not be_nil
     expect(body).to_not eq ''
@@ -65,7 +61,6 @@ describe "Sending async requests" do
 
   it "sends an async request with a body" do
     incoming_request = nil
-    reply_done       = false
     server.on_req    = Proc.new do |req, stream|
       incoming_request = req
 
@@ -79,8 +74,6 @@ describe "Sending async requests" do
 
       stream.data(body_chunk_1, end_stream: false)
       stream.data(body_chunk_2, end_stream: true)
-
-      reply_done = true
     end
 
     request = client.prepare_request(:get, '/path',
@@ -98,8 +91,7 @@ describe "Sending async requests" do
     expect(request).to be_a NetHttp2::Request
 
     client.call_async(request)
-
-    wait_for { reply_done }
+    client.join
 
     expect(headers).to_not be_nil
     expect(headers[':status']).to eq "200"
@@ -118,7 +110,6 @@ describe "Sending async requests" do
   end
 
   it "sends multiple async requests sequentially" do
-    replies_done  = 0
     server.on_req = Proc.new do |req, stream|
       body_chunk_1 = "response body for #{req.headers[':path']}"
       body_chunk_2 = " and another chunk"
@@ -130,8 +121,6 @@ describe "Sending async requests" do
 
       stream.data(body_chunk_1, end_stream: false)
       stream.data(body_chunk_2, end_stream: true)
-
-      replies_done += 1
     end
 
     request_1 = client.prepare_request(:get, '/path1')
@@ -156,8 +145,7 @@ describe "Sending async requests" do
 
     client.call_async(request_1)
     client.call_async(request_2)
-
-    wait_for { replies_done == 2 }
+    client.join
 
     expect(headers_1).to_not be_nil
     expect(headers_1[':status']).to eq "200"
@@ -175,7 +163,6 @@ describe "Sending async requests" do
   end
 
   it "sends multiple async requests concurrently" do
-    replies_done  = 0
     server.on_req = Proc.new do |req, stream|
       body_chunk_1 = "response body for #{req.headers[':path']}"
       body_chunk_2 = " and another chunk"
@@ -187,8 +174,6 @@ describe "Sending async requests" do
 
       stream.data(body_chunk_1, end_stream: false)
       stream.data(body_chunk_2, end_stream: true)
-
-      replies_done += 1
     end
 
     request_1 = client.prepare_request(:get, '/path1')
@@ -215,7 +200,7 @@ describe "Sending async requests" do
     thread = Thread.new { client.call_async(request_2) }
     thread.join
 
-    wait_for { replies_done == 2 }
+    client.join
 
     expect(headers_1).to_not be_nil
     expect(headers_1[':status']).to eq "200"
@@ -235,10 +220,7 @@ describe "Sending async requests" do
   it "sends an async request without a body and receives big bodies" do
     big_body = "a" * 100_000
 
-    reply_done       = false
     server.on_req = Proc.new do |_req|
-      reply_done = true
-
       NetHttp2::Response.new(
         headers: { ":status" => "200" },
         body:    big_body.dup
@@ -257,8 +239,7 @@ describe "Sending async requests" do
     expect(request).to be_a NetHttp2::Request
 
     client.call_async(request)
-
-    wait_for { reply_done }
+    client.join
 
     expect(headers).to_not be_nil
     expect(headers[':status']).to eq "200"
@@ -293,8 +274,7 @@ describe "Sending async requests" do
     expect(request).to be_a NetHttp2::Request
 
     client.call_async(request)
-
-    wait_for { !received_body.nil? }
+    client.join
 
     expect(received_body).to eq big_body
 

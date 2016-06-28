@@ -44,6 +44,20 @@ module NetHttp2
       init_vars
     end
 
+    def join
+      while !@streams.empty? do
+        sleep 0.05
+      end
+    end
+
+    def add_stream_to_monitor(stream)
+      @streams[stream.id] = true
+    end
+
+    def mark_stream_as_closed(stream)
+      @streams.delete(stream.id)
+    end
+
     private
 
     def init_vars
@@ -52,10 +66,11 @@ module NetHttp2
       @socket_thread   = nil
       @first_data_sent = false
       @mutex           = Mutex.new
+      @streams         = {}
     end
 
     def new_stream
-      NetHttp2::Stream.new(uri: @uri, h2_stream: h2.new_stream)
+      NetHttp2::Stream.new(client: self, h2_stream: h2.new_stream)
     end
 
     def ensure_open

@@ -58,10 +58,8 @@ request.on(:close) { puts "request completed!" }
 # send
 client.call_async(request)
 
-# We need to wait for the callbacks to be triggered, so here's a quick and dirty fix for this example.
-# In real life, if you are using async requests you probably have a running loop that keeps
-# your program alive.
-sleep 5
+# Wait for all outgoing stream to be closed
+client.join
 
 # close the connection
 client.close

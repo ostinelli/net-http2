@@ -3,6 +3,7 @@ module NetHttp2
   class Stream
 
     def initialize(options={})
+      @client    = options[:client]
       @h2_stream = options[:h2_stream]
       @headers   = {}
       @data      = ''
@@ -12,10 +13,13 @@ module NetHttp2
       @mutex     = Mutex.new
       @cv        = ConditionVariable.new
 
-
       listen_for_headers
       listen_for_data
       listen_for_close
+    end
+
+    def id
+      @h2_stream.id
     end
 
     def call_with(request)
@@ -27,6 +31,8 @@ module NetHttp2
     def async_call_with(request)
       @request = request
       @async   = true
+      @client.add_stream_to_monitor(self)
+
       send_request_data
     end
 
@@ -68,6 +74,7 @@ module NetHttp2
 
         if async?
           @request.emit(:close, data)
+          @client.mark_stream_as_closed(self)
         else
           @mutex.synchronize { @cv.signal }
         end
