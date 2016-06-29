@@ -28,7 +28,8 @@ module NetHttp2
 
     def call_async(request)
       ensure_open
-      new_stream.async_call_with request
+      stream = new_monitored_stream_for request
+      stream.async_call_with request
     end
 
     def prepare_request(method, path, options={})
@@ -50,14 +51,6 @@ module NetHttp2
       end
     end
 
-    def add_stream_to_monitor(stream)
-      @streams[stream.id] = true
-    end
-
-    def mark_stream_as_closed(stream)
-      @streams.delete(stream.id)
-    end
-
     private
 
     def init_vars
@@ -70,7 +63,16 @@ module NetHttp2
     end
 
     def new_stream
-      NetHttp2::Stream.new(client: self, h2_stream: h2.new_stream)
+      NetHttp2::Stream.new(h2_stream: h2.new_stream)
+    end
+
+    def new_monitored_stream_for(request)
+      stream = new_stream
+
+      @streams[stream.id] = true
+      request.on(:close) { @streams.delete(stream.id) }
+
+      stream
     end
 
     def ensure_open
