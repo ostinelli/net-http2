@@ -80,15 +80,15 @@ module NetHttp2
 
         return if @socket_thread
 
+        main_thread = Thread.current
         @socket = new_socket
 
         @socket_thread = Thread.new do
-
           begin
             socket_loop
           rescue Exception => e
             # socket closed
-            Thread.main.raise e
+            main_thread.raise e
           ensure
             @socket.close unless @socket.closed?
             @socket        = nil
