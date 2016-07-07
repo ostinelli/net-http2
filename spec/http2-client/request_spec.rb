@@ -38,7 +38,7 @@ describe NetHttp2::Request do
             ':scheme'        => 'http',
             ':method'        => 'POST',
             ':path'          => '/path',
-            'host'           => 'localhost',
+            ':authority'     => 'localhost:80',
             'content-length' => '12'
           }
         ) }
@@ -50,7 +50,7 @@ describe NetHttp2::Request do
             ':scheme'        => 'https',
             ':method'        => 'OTHER',
             ':path'          => '/another',
-            'host'           => 'rob.local',
+            ':authority'     => 'rob.local:80',
             'x-custom'       => 'custom',
             'content-length' => '999'
           }
@@ -61,7 +61,7 @@ describe NetHttp2::Request do
             ':scheme'        => 'http',
             ':method'        => 'POST',
             ':path'          => '/path',
-            'host'           => 'rob.local',
+            ':authority'     => 'rob.local:80',
             'x-custom'       => 'custom',
             'content-length' => '12'
           }
@@ -78,10 +78,10 @@ describe NetHttp2::Request do
 
         it { is_expected.to eq(
           {
-            ':scheme' => 'http',
-            ':method' => 'GET',
-            ':path'   => '/path',
-            'host'    => 'localhost'
+            ':scheme'    => 'http',
+            ':method'    => 'GET',
+            ':path'      => '/path',
+            ':authority' => 'localhost:80'
           }
         ) }
       end
@@ -92,7 +92,7 @@ describe NetHttp2::Request do
             ':scheme'        => 'https',
             ':method'        => 'OTHER',
             ':path'          => '/another',
-            'host'           => 'rob.local',
+            ':authority'     => 'rob.local:80',
             'x-custom'       => 'custom',
             'content-length' => '999'
           }
@@ -100,11 +100,11 @@ describe NetHttp2::Request do
 
         it { is_expected.to eq(
           {
-            ':scheme'  => 'http',
-            ':method'  => 'GET',
-            ':path'    => '/path',
-            'host'     => 'rob.local',
-            'x-custom' => 'custom'
+            ':scheme'    => 'http',
+            ':method'    => 'GET',
+            ':path'      => '/path',
+            ':authority' => 'rob.local:80',
+            'x-custom'   => 'custom'
           }
         ) }
       end

@@ -31,7 +31,7 @@ describe "SSL Requests" do
     expect(request.headers[":scheme"]).to eq "https"
     expect(request.headers[":method"]).to eq "GET"
     expect(request.headers[":path"]).to eq "/path"
-    expect(request.headers["host"]).to eq "localhost"
+    expect(request.headers[":authority"]).to eq "localhost:#{port}"
   end
 
   it "sends SSL GET requests and receives big bodies" do
@@ -56,7 +56,7 @@ describe "SSL Requests" do
     expect(request.headers[":scheme"]).to eq "https"
     expect(request.headers[":method"]).to eq "GET"
     expect(request.headers[":path"]).to eq "/path"
-    expect(request.headers["host"]).to eq "localhost"
+    expect(request.headers[":authority"]).to eq "localhost:#{port}"
   end
 
   it "sends SSL POST requests with big bodies" do

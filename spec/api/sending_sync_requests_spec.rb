@@ -34,7 +34,7 @@ describe "Sending sync requests" do
     expect(request.headers[":scheme"]).to eq "http"
     expect(request.headers[":method"]).to eq "GET"
     expect(request.headers[":path"]).to eq "/path"
-    expect(request.headers["host"]).to eq "localhost"
+    expect(request.headers[":authority"]).to eq "localhost:#{port}"
     expect(request.headers["x-custom-header"]).to eq "custom"
   end
 
@@ -61,7 +61,7 @@ describe "Sending sync requests" do
     expect(request.headers[":scheme"]).to eq "http"
     expect(request.headers[":method"]).to eq "POST"
     expect(request.headers[":path"]).to eq "/path"
-    expect(request.headers["host"]).to eq "localhost"
+    expect(request.headers[":authority"]).to eq "localhost:#{port}"
     expect(request.headers["x-custom-header"]).to eq "custom"
 
     expect(request.body).to eq "body"

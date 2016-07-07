@@ -55,7 +55,7 @@ describe "Sending async requests" do
     expect(incoming_request.headers[":scheme"]).to eq "http"
     expect(incoming_request.headers[":method"]).to eq "GET"
     expect(incoming_request.headers[":path"]).to eq "/path"
-    expect(incoming_request.headers["host"]).to eq "localhost"
+    expect(incoming_request.headers[":authority"]).to eq "localhost:#{port}"
     expect(incoming_request.headers["x-custom-header"]).to eq "custom"
   end
 
@@ -104,7 +104,7 @@ describe "Sending async requests" do
     expect(incoming_request.headers[":scheme"]).to eq "http"
     expect(incoming_request.headers[":method"]).to eq "GET"
     expect(incoming_request.headers[":path"]).to eq "/path"
-    expect(incoming_request.headers["host"]).to eq "localhost"
+    expect(incoming_request.headers[":authority"]).to eq "localhost:#{port}"
     expect(incoming_request.headers["x-custom-header"]).to eq "custom"
     expect(incoming_request.body).to eq "request body"
   end
