@@ -17,6 +17,7 @@ module NetHttp2
 
       @is_ssl = (@uri.scheme == 'https')
 
+      @mutex = Mutex.new
       init_vars
     end
 
@@ -58,7 +59,6 @@ module NetHttp2
       @socket          = nil
       @socket_thread   = nil
       @first_data_sent = false
-      @mutex           = Mutex.new
       @streams         = {}
     end
 
@@ -81,7 +81,7 @@ module NetHttp2
         return if @socket_thread
 
         main_thread = Thread.current
-        @socket = new_socket
+        @socket     = new_socket
 
         @socket_thread = Thread.new do
           begin
@@ -91,8 +91,7 @@ module NetHttp2
             main_thread.raise e
           ensure
             @socket.close unless @socket.closed?
-            @socket        = nil
-            @socket_thread = nil
+            init_vars
           end
         end
       end
