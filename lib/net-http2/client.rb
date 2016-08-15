@@ -55,6 +55,8 @@ module NetHttp2
     private
 
     def init_vars
+      @socket.close if @socket && !@socket.closed?
+
       @h2              = nil
       @socket          = nil
       @socket_thread   = nil
@@ -64,6 +66,9 @@ module NetHttp2
 
     def new_stream
       NetHttp2::Stream.new(h2_stream: h2.new_stream)
+    rescue StandardError => e
+      init_vars
+      raise e
     end
 
     def new_monitored_stream_for(request)
@@ -90,7 +95,6 @@ module NetHttp2
             # socket closed
             main_thread.raise e
           ensure
-            @socket.close unless @socket.closed?
             init_vars
           end
         end
