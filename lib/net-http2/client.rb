@@ -67,7 +67,7 @@ module NetHttp2
     def new_stream
       NetHttp2::Stream.new(h2_stream: h2.new_stream)
     rescue StandardError => e
-      init_vars
+      close
       raise e
     end
 
