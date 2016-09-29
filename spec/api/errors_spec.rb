@@ -2,8 +2,8 @@ require 'spec_helper'
 
 describe "Errors" do
   let(:port) { 9516 }
-  let(:server) { NetHttp2::Dummy::Server.new(port: port) }
-  let(:client) { NetHttp2::Client.new("http://localhost:#{port}") }
+  let(:server) { NetHttp2::Dummy::Server.new(port: port, ssl: true) }
+  let(:client) { NetHttp2::Client.new("https://localhost:#{port}") }
 
   describe "Errors in callbacks" do
 
@@ -35,10 +35,27 @@ describe "Errors" do
     end
   end
 
-  describe "Errors in sockets" do
+  describe "Connection errors" do
 
-    it "raise errors" do
+    it "raise errors when server cannot be reached" do
       expect { client.call(:get, '/path') }.to raise_error Errno::ECONNREFUSED
+    end
+  end
+
+  describe "EOFErrors on socket" do
+
+    before { server.listen }
+    after do
+      client.close
+      server.stop
+    end
+
+    it "raises a SocketError" do
+      server.on_req = Proc.new do |_req, _stream, socket|
+        socket.close
+      end
+
+      expect { client.call(:get, '/path') }.to raise_error SocketError, 'Socket was remotely closed'
     end
   end
 end

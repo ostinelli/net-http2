@@ -77,7 +77,7 @@ module NetHttp2
 
             # callbacks
             res = if on_req
-              on_req.call(req, stream)
+              on_req.call(req, stream, socket)
             else
               NetHttp2::Response.new(
                 headers: { ":status" => "200" },

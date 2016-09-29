@@ -91,11 +91,16 @@ module NetHttp2
         @socket_thread = Thread.new do
           begin
             socket_loop
-          rescue Exception => e
+
+          rescue EOFError
             # socket closed
-            main_thread.raise e
-          ensure
             init_vars
+            main_thread.raise SocketError.new 'Socket was remotely closed'
+
+          rescue Exception => e
+            # error on socket
+            init_vars
+            main_thread.raise e
           end
         end
       end
