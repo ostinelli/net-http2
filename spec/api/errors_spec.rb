@@ -57,5 +57,26 @@ describe "Errors" do
 
       expect { client.call(:get, '/path') }.to raise_error SocketError, 'Socket was remotely closed'
     end
+
+    it "repairs the connection for subsequent calls" do
+      close_next_socket = true
+      server.on_req     = Proc.new do |_req, _stream, socket|
+        if close_next_socket
+          close_next_socket = false
+          socket.close
+        else
+          NetHttp2::Response.new(
+            headers: { ":status" => "200" },
+            body:    "response body"
+          )
+        end
+      end
+
+      client.call(:get, '/path') rescue SocketError
+
+      response = client.call(:get, '/path')
+      expect(response.status).to eq '200'
+      expect(response.body).to eq 'response body'
+    end
   end
 end
