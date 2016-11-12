@@ -105,12 +105,13 @@ These behave similarly to HTTP/1 calls.
 
  Sends a request. Returns `nil` in case a timeout occurs.
 
- `method` is a symbol that specifies the `:method` header (`:get`, `:post`, `:put`, `:patch`, `:delete`, `:options`). The body and the headers of the request can be specified in the options, together with the timeout.
+ `method` is a symbol that specifies the `:method` header (`:get`, `:post`, `:put`, `:patch`, `:delete`, `:options`). The body, headers and query-string params of the request can be specified in the options, together with the timeout.
 
  ```ruby
  response_1 = client.call(:get, '/path1')
  response_2 = client.call(:get, '/path2', headers: { 'x-custom' => 'custom' })
  response_3 = client.call(:post, '/path3', body: "the request body", timeout: 1)
+ response_3 = client.call(:post, '/path4', params: { page: 4 })
  ```
 
 ##### Non-blocking calls
@@ -148,6 +149,14 @@ The real benefit of HTTP/2 is being able to receive body and header streams. Ins
  * **path** → **`string`**
 
  The request's path.
+ 
+ * **params** → **`hash`**
+
+ The query string params in hash format, for example `{one: 1, two: 2}`. These will be encoded and appended to `path`.
+
+ * **params** → **`hash`**
+
+ The query-string params, expressed in a Hash. These will be appended to the path after encoding.
 
  * **body** → **`string`**
 
