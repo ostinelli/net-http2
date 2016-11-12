@@ -75,7 +75,7 @@ client.close
 
  Returns a new client. `url` is a `string` such as `http://nghttp2.org`.
  The current options are:
- 
+
   * `:connect_timeout`, specifies the max connect timeout in seconds (defaults to 60).
   * `:ssl_context`, in case the url has an https scheme and you want your SSL client to use a custom context.
 
@@ -149,14 +149,10 @@ The real benefit of HTTP/2 is being able to receive body and header streams. Ins
  * **path** → **`string`**
 
  The request's path.
- 
+
  * **params** → **`hash`**
 
  The query string params in hash format, for example `{one: 1, two: 2}`. These will be encoded and appended to `path`.
-
- * **params** → **`hash`**
-
- The query-string params, expressed in a Hash. These will be appended to the path after encoding.
 
  * **body** → **`string`**
 
