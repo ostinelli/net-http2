@@ -6,6 +6,7 @@ require 'http/2'
 module NetHttp2
 
   DRAFT = 'h2'
+  PROXY_SETTINGS_KEYS = [:proxy_addr, :proxy_port, :proxy_user, :proxy_pass]
 
   class Client
     attr_reader :uri
@@ -14,6 +15,10 @@ module NetHttp2
       @uri             = URI.parse(url)
       @connect_timeout = options[:connect_timeout] || 60
       @ssl_context     = add_npn_to_context(options[:ssl_context] || OpenSSL::SSL::SSLContext.new)
+
+      PROXY_SETTINGS_KEYS.each do |key|
+        instance_variable_set("@#{key}", options[key]) if options[key]
+      end
 
       @is_ssl = (@uri.scheme == 'https')
 
@@ -126,7 +131,11 @@ module NetHttp2
     end
 
     def new_socket
-      NetHttp2::Socket.create(@uri, ssl: ssl?, ssl_context: @ssl_context, connect_timeout: @connect_timeout)
+      options = {
+        ssl: ssl?, ssl_context: @ssl_context, connect_timeout: @connect_timeout
+      }
+      PROXY_SETTINGS_KEYS.each { |k| options[k] = instance_variable_get("@#{k}") }
+      NetHttp2::Socket.create(@uri, options)
     end
 
     def ensure_sent_before_receiving
