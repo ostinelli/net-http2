@@ -60,13 +60,15 @@ module NetHttp2
     private
 
     def init_vars
-      @socket.close if @socket && !@socket.closed?
+      @mutex.synchronize do
+        @socket.close if @socket && !@socket.closed?
 
-      @h2              = nil
-      @socket          = nil
-      @socket_thread   = nil
-      @first_data_sent = false
-      @streams         = {}
+        @h2              = nil
+        @socket          = nil
+        @socket_thread   = nil
+        @first_data_sent = false
+        @streams         = {}
+      end
     end
 
     def new_stream
