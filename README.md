@@ -78,6 +78,7 @@ client.close
 
   * `:connect_timeout`, specifies the max connect timeout in seconds (defaults to 60).
   * `:ssl_context`, in case the url has an https scheme and you want your SSL client to use a custom context.
+  * `:proxy_addr`, `:proxy_port`, `:proxy_user`, `:proxy_pass`, specify Proxy connection parameters.
 
  To create a new client:
  ```ruby
