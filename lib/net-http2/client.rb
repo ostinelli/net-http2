@@ -5,7 +5,7 @@ require 'http/2'
 
 module NetHttp2
 
-  DRAFT = 'h2'
+  DRAFT               = 'h2'
   PROXY_SETTINGS_KEYS = [:proxy_addr, :proxy_port, :proxy_user, :proxy_pass]
 
   class Client
@@ -90,8 +90,7 @@ module NetHttp2
 
         return if @socket_thread
 
-        main_thread = Thread.current
-        @socket     = new_socket
+        @socket = new_socket
 
         @socket_thread = Thread.new do
           begin
@@ -100,14 +99,14 @@ module NetHttp2
           rescue EOFError
             # socket closed
             init_vars
-            main_thread.raise SocketError.new 'Socket was remotely closed'
+            raise SocketError.new 'Socket was remotely closed'
 
           rescue Exception => e
             # error on socket
             init_vars
-            main_thread.raise e
+            raise e
           end
-        end
+        end.tap { |t| t.abort_on_exception = true }
       end
     end
 
