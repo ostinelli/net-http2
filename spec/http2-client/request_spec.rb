@@ -127,42 +127,28 @@ describe NetHttp2::Request do
     end
 
     it "converts params into properly formed query strings" do
-      request = request_for_params(a: "a", b: ["c", "d", "e"])
-      expect(request.full_path).to eq "/my_path?a=a&b%5B%5D=c&b%5B%5D=d&b%5B%5D=e"
+      req = request_for_params(a: "a", b: ["c", "d", "e"])
+      expect(req.full_path).to eq "/my_path?a=a&b%5B%5D=c&b%5B%5D=d&b%5B%5D=e"
 
-      request = request_for_params(a: "a", :b => [{ :c => "c", :d => "d" }, { :e => "e", :f => "f" }])
-      expect(request.full_path).to eq "/my_path?a=a&b%5B%5D%5Bc%5D=c&b%5B%5D%5Bd%5D=d&b%5B%5D%5Be%5D=e&b%5B%5D%5Bf%5D=f"
+      req = request_for_params(a: "a", :b => [{ :c => "c", :d => "d" }, { :e => "e", :f => "f" }])
+      expect(req.full_path).to eq "/my_path?a=a&b%5B%5D%5Bc%5D=c&b%5B%5D%5Bd%5D=d&b%5B%5D%5Be%5D=e&b%5B%5D%5Bf%5D=f"
 
-      request = request_for_params(a: "a", :b => { :c => "c", :d => "d" })
-      expect(request.full_path).to eq "/my_path?a=a&b%5Bc%5D=c&b%5Bd%5D=d"
+      req = request_for_params(a: "a", :b => { :c => "c", :d => "d" })
+      expect(req.full_path).to eq "/my_path?a=a&b%5Bc%5D=c&b%5Bd%5D=d"
 
-      request = request_for_params(a: "a", :b => { :c => "c", :d => true })
-      expect(request.full_path).to eq "/my_path?a=a&b%5Bc%5D=c&b%5Bd%5D=true"
+      req = request_for_params(a: "a", :b => { :c => "c", :d => true })
+      expect(req.full_path).to eq "/my_path?a=a&b%5Bc%5D=c&b%5Bd%5D=true"
 
-      request = request_for_params(a: "a", :b => { :c => "c", :d => true }, :e => [])
-      expect(request.full_path).to eq "/my_path?a=a&b%5Bc%5D=c&b%5Bd%5D=true"
+      req = request_for_params(a: "a", :b => { :c => "c", :d => true }, :e => [])
+      expect(req.full_path).to eq "/my_path?a=a&b%5Bc%5D=c&b%5Bd%5D=true"
 
-      request = request_for_params(nil)
-      expect(request.full_path).to eq "/my_path"
+      req = request_for_params(nil)
+      expect(req.full_path).to eq "/my_path"
     end
   end
 
-  describe "Events subscription & emission" do
-
-    [
-      :headers,
-      :body_chunk,
-      :close
-    ].each do |event|
-      it "subscribes and emits for event #{event}" do
-        calls = []
-        request.on(event) { calls << :one }
-        request.on(event) { calls << :two }
-
-        request.emit(event, "param")
-
-        expect(calls).to match_array [:one, :two]
-      end
-    end
+  describe "Subscription & emission" do
+    subject { NetHttp2::Client.new("http://localhost") }
+    it_behaves_like "a class that implements events subscription & emission"
   end
 end

@@ -4,6 +4,8 @@ module NetHttp2
 
   class Request
 
+    include Callbacks
+
     DEFAULT_TIMEOUT = 60
 
     attr_reader :method, :uri, :path, :params, :body, :timeout
@@ -44,18 +46,6 @@ module NetHttp2
       path = @path
       path += "?#{to_query(@params)}" unless @params.empty?
       path
-    end
-
-    def on(event, &block)
-      raise ArgumentError, 'on event must provide a block' unless block_given?
-
-      @events[event] ||= []
-      @events[event] << block
-    end
-
-    def emit(event, arg)
-      return unless @events[event]
-      @events[event].each { |b| b.call(arg) }
     end
 
     private

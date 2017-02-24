@@ -9,6 +9,9 @@ module NetHttp2
   PROXY_SETTINGS_KEYS = [:proxy_addr, :proxy_port, :proxy_user, :proxy_pass]
 
   class Client
+
+    include Callbacks
+
     attr_reader :uri
 
     def initialize(url, options={})
@@ -101,14 +104,22 @@ module NetHttp2
           rescue EOFError
             # socket closed
             init_vars
-            raise SocketError.new 'Socket was remotely closed'
+            callback_or_raise SocketError.new('Socket was remotely closed')
 
           rescue Exception => e
             # error on socket
             init_vars
-            raise e
+            callback_or_raise e
           end
         end.tap { |t| t.abort_on_exception = true }
+      end
+    end
+
+    def callback_or_raise(exception)
+      if callback_events.keys.include?(:error)
+        emit(:error, exception)
+      else
+        raise exception
       end
     end
 

@@ -56,10 +56,10 @@ describe NetHttp2::Client do
     let(:options) {
       {
         ssl_context: OpenSSL::SSL::SSLContext.new,
-        proxy_addr: 'http://hidemyass.proxy.com',
-        proxy_port: '3213',
-        proxy_user: 'someuser',
-        proxy_pass: 'somepass'
+        proxy_addr:  'http://hidemyass.proxy.com',
+        proxy_port:  '3213',
+        proxy_user:  'someuser',
+        proxy_pass:  'somepass'
       }
     }
     let(:fake_tcp_socket) { double }
@@ -81,5 +81,10 @@ describe NetHttp2::Client do
 
       NetHttp2::Socket.ssl_socket(uri, options)
     end
+  end
+
+  describe "Subscription & emission" do
+    subject { NetHttp2::Client.new("http://localhost") }
+    it_behaves_like "a class that implements events subscription & emission"
   end
 end
