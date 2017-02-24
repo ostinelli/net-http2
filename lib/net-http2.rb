@@ -6,6 +6,8 @@ require 'net-http2/socket'
 require 'net-http2/stream'
 require 'net-http2/version'
 
+require 'http2_patch'
+
 module NetHttp2
   raise "Cannot require NetHttp2, unsupported engine '#{RUBY_ENGINE}'" unless RUBY_ENGINE == "ruby"
 end
