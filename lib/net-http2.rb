@@ -1,3 +1,4 @@
+require 'net-http2/callbacks'
 require 'net-http2/client'
 require 'net-http2/response'
 require 'net-http2/request'
