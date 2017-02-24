@@ -95,6 +95,16 @@ client.close
  NetHttp2::Client.new("https://nghttp2.org", ssl_context: ctx)
  ```
 
+ * **on(event, &block)**
+
+Allows to set a callback for the client. The only available event is `:error`, which allows to set a callback when an error is raised at socket level, hence in the underlying socket thread.
+
+```ruby
+client.on(:error) { |exception| puts "Exception has been raised: #{exception}" }
+```
+
+> It is RECOMMENDED to set the `:error` callback: if none is defined, the underlying socket thread may raise an error in the main thread at unexpected execution times. 
+
  * **uri** → **`URI`**
 
  Returns the URI of the endpoint.
@@ -202,7 +212,10 @@ The real benefit of HTTP/2 is being able to receive body and header streams. Ins
 
 
 ## Thread-Safety
-NetHttp2 is thread-safe.
+NetHttp2 is thread-safe. However, some caution is imperative:
+
+  * The async callbacks will be executed in a different thread, so ensure that your code in the callbacks is thread-safe.
+  * Errors in the underlying socket loop thread will be raised in the main thread at unexpected execution times, unless you specify the `:error` callback on the Client (recommended).
 
 ## Contributing
 So you want to contribute? That's great! Please follow the guidelines below. It will make it easier to get merged in.
