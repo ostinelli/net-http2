@@ -25,7 +25,7 @@ describe NetHttp2::Request do
   end
 
   describe "#headers" do
-    let(:full_path) { double(:full_path) }
+    let(:full_path) { '/a/full/path' }
 
     before { allow(request).to receive(:full_path) { full_path } }
 
@@ -52,23 +52,25 @@ describe NetHttp2::Request do
       context "when headers are passed" do
         let(:headers) do
           {
-            ':scheme'        => 'https',
-            ':method'        => 'OTHER',
-            ':path'          => '/another',
-            ':authority'     => 'rob.local:80',
-            'x-custom'       => 'custom',
-            'content-length' => '999'
+            ':scheme'         => 'https',
+            ':method'         => 'OTHER',
+            ':path'           => '/another',
+            ':authority'      => 'rob.local:80',
+            'x-custom'        => 'custom',
+            'x-custom-number' => 3,
+            'content-length'  => '999'
           }
         end
 
         it { is_expected.to eq(
           {
-            ':scheme'        => 'http',
-            ':method'        => 'POST',
-            ':path'          => full_path,
-            ':authority'     => 'rob.local:80',
-            'x-custom'       => 'custom',
-            'content-length' => '12'
+            ':scheme'         => 'http',
+            ':method'         => 'POST',
+            ':path'           => full_path,
+            ':authority'      => 'rob.local:80',
+            'x-custom'        => 'custom',
+            'x-custom-number' => '3',
+            'content-length'  => '12'
           }
         ) }
       end
@@ -94,22 +96,24 @@ describe NetHttp2::Request do
       context "when headers are passed" do
         let(:headers) do
           {
-            ':scheme'        => 'https',
-            ':method'        => 'OTHER',
-            ':path'          => '/another',
-            ':authority'     => 'rob.local:80',
-            'x-custom'       => 'custom',
-            'content-length' => '999'
+            ':scheme'         => 'https',
+            ':method'         => 'OTHER',
+            ':path'           => '/another',
+            ':authority'      => 'rob.local:80',
+            'x-custom'        => 'custom',
+            'x-custom-number' => 3,
+            'content-length'  => '999'
           }
         end
 
         it { is_expected.to eq(
           {
-            ':scheme'    => 'http',
-            ':method'    => 'GET',
-            ':path'      => full_path,
-            ':authority' => 'rob.local:80',
-            'x-custom'   => 'custom'
+            ':scheme'         => 'http',
+            ':method'         => 'GET',
+            ':path'           => full_path,
+            ':authority'      => 'rob.local:80',
+            'x-custom'        => 'custom',
+            'x-custom-number' => '3'
           }
         ) }
       end

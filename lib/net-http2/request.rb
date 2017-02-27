@@ -30,10 +30,12 @@ module NetHttp2
       @headers.merge!(':authority' => "#{@uri.host}:#{@uri.port}") unless @headers[':authority']
 
       if @body
-        @headers.merge!('content-length' => @body.bytesize.to_s)
+        @headers.merge!('content-length' => @body.bytesize)
       else
         @headers.delete('content-length')
       end
+
+      @headers.update(@headers) { |_k, v| v.to_s }
 
       @headers
     end
