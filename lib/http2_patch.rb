@@ -25,12 +25,22 @@ module HTTP2
       # states count toward the maximum number of streams that an endpoint is
       # permitted to open.
       stream.once(:active) { @active_stream_count += 1 }
+
+      @streams_recently_closed ||= {}
       stream.once(:close) do
-        @streams.delete id
         @active_stream_count -= 1
+
+        @streams_recently_closed.delete_if do |closed_stream_id, v|
+          to_be_deleted = (Time.now - v) > 15
+          @streams.delete(closed_stream_id) if to_be_deleted
+          to_be_deleted
+        end
+
+        @streams_recently_closed[id] = Time.now
       end
+
       stream.on(:promise, &method(:promise)) if self.is_a? Server
-      stream.on(:frame,   &method(:send))
+      stream.on(:frame, &method(:send))
       stream.on(:window_update, &method(:window_update))
 
       @streams[id] = stream
