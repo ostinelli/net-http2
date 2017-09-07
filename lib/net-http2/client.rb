@@ -60,6 +60,14 @@ module NetHttp2
       end
     end
 
+    def remote_settings
+      h2.remote_settings
+    end
+
+    def stream_count
+      @streams.length
+    end
+
     private
 
     def init_vars
