@@ -87,4 +87,24 @@ describe NetHttp2::Client do
     subject { NetHttp2::Client.new("http://localhost") }
     it_behaves_like "a class that implements events subscription & emission"
   end
+
+  describe "#remote_settings" do
+    let(:client) { NetHttp2::Client.new("http://localhost") }
+
+    subject { client.remote_settings}
+    it { is_expected.to have_key :settings_header_table_size }
+    it { is_expected.to have_key :settings_enable_push }
+    it { is_expected.to have_key :settings_max_concurrent_streams }
+    it { is_expected.to have_key :settings_initial_window_size }
+    it { is_expected.to have_key :settings_max_frame_size }
+    it { is_expected.to have_key :settings_max_header_list_size }
+  end
+
+  describe "#stream_count" do
+    let(:client) { NetHttp2::Client.new("http://localhost") }
+
+    subject { client.stream_count}
+    it { is_expected.to eq 0 }
+  end
+
 end
