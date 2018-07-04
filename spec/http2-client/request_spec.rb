@@ -52,13 +52,13 @@ describe NetHttp2::Request do
       context "when headers are passed" do
         let(:headers) do
           {
-            ':scheme'         => 'https',
-            ':method'         => 'OTHER',
-            ':path'           => '/another',
             ':authority'      => 'rob.local:80',
             'x-custom'        => 'custom',
             'x-custom-number' => 3,
-            'content-length'  => '999'
+            'content-length'  => '999',
+            ':scheme'         => 'https',
+            ':method'         => 'OTHER',
+            ':path'           => '/another'
           }
         end
 
@@ -96,13 +96,13 @@ describe NetHttp2::Request do
       context "when headers are passed" do
         let(:headers) do
           {
-            ':scheme'         => 'https',
-            ':method'         => 'OTHER',
-            ':path'           => '/another',
             ':authority'      => 'rob.local:80',
+            ':scheme'         => 'https',
+            ':path'           => '/another',
             'x-custom'        => 'custom',
             'x-custom-number' => 3,
-            'content-length'  => '999'
+            'content-length'  => '999',
+            ':method'         => 'OTHER',
           }
         end
 

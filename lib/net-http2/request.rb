@@ -39,7 +39,8 @@ module NetHttp2
 
       @headers.update(@headers) { |_k, v| v.to_s }
 
-      @headers
+      # see <https://github.com/ostinelli/apnotic/issues/68>
+      @headers.sort.to_h
     end
 
     def full_path
