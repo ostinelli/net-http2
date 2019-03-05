@@ -83,7 +83,7 @@ module NetHttp2
     end
 
     def new_stream
-      NetHttp2::Stream.new(h2_stream: h2.new_stream)
+      @mutex.synchronize { NetHttp2::Stream.new(h2_stream: h2.new_stream) }
     rescue StandardError => e
       close
       raise e
