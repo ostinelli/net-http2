@@ -112,7 +112,7 @@ module NetHttp2
           rescue EOFError
             # socket closed
             init_vars
-            callback_or_raise SocketError.new('Socket was remotely closed')
+            callback_or_raise SocketError.new(@goawayReason || "Socket was remotely closed")
 
           rescue Exception => e
             # error on socket
@@ -172,6 +172,12 @@ module NetHttp2
             @socket.flush
 
             @first_data_sent = true
+          end
+        end
+        h2.on(:frame_received) do |frame|
+          if frame[:type] == :goaway
+            payload = JSON.parse(frame[:payload])
+            @goawayReason = payload["reason"]
           end
         end
       end
