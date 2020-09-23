@@ -59,7 +59,7 @@ request.on(:close) { puts "request completed!" }
 client.call_async(request)
 
 # Wait for all outgoing stream to be closed
-client.join
+client.join(timeout: 5)
 
 # close the connection
 client.close
@@ -103,7 +103,7 @@ Allows to set a callback for the client. The only available event is `:error`, w
 client.on(:error) { |exception| puts "Exception has been raised: #{exception}" }
 ```
 
-> It is RECOMMENDED to set the `:error` callback: if none is defined, the underlying socket thread may raise an error in the main thread at unexpected execution times. 
+> It is RECOMMENDED to set the `:error` callback: if none is defined, the underlying socket thread may raise an error in the main thread at unexpected execution times.
 
  * **uri** → **`URI`**
 
@@ -140,9 +140,9 @@ The real benefit of HTTP/2 is being able to receive body and header streams. Ins
 
  Calls the server with the async request.
 
- * **join**
+ * **join(timeout:)**
 
- Wait for all outstanding requests to be completed.
+ Wait for all outstanding requests to be completed, optionally with a timeout for this condition to be met. Raises NetHttp2::AsyncRequestTimeout if the timeout is reached.
 
 
 ### `NetHttp2::Request`

@@ -8,6 +8,8 @@ module NetHttp2
   DRAFT               = 'h2'
   PROXY_SETTINGS_KEYS = [:proxy_addr, :proxy_port, :proxy_user, :proxy_pass]
 
+  AsyncRequestTimeout = Class.new(StandardError)
+
   class Client
 
     include Callbacks
@@ -54,8 +56,10 @@ module NetHttp2
       init_vars
     end
 
-    def join
+    def join(timeout: nil)
+      starting_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       while !@streams.empty? do
+        raise AsyncRequestTimeout if timeout && Process.clock_gettime(Process::CLOCK_MONOTONIC) - starting_time > timeout
         sleep 0.05
       end
     end

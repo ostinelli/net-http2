@@ -158,6 +158,32 @@ describe "Errors" do
       end
     end
 
+    describe "unfinished requests" do
+
+      before { server.listen }
+      after do
+        client.close
+        server.stop
+      end
+
+      it "times out joining the client" do
+        server.on_req = Proc.new do |_req, _stream, socket|
+          sleep 2
+
+          NetHttp2::Response.new(
+            headers: { ":status" => "200" },
+            body:    "response body"
+          )
+        end
+
+        request = client.prepare_request(:get, '/path')
+
+        client.call_async(request)
+        expect { client.join(timeout: 1) }.to raise_error NetHttp2::AsyncRequestTimeout
+        client.join
+      end
+    end
+
     describe "EOFErrors on socket" do
 
       before { server.listen }
