@@ -16,8 +16,6 @@ module NetHttp2
     end
 
     class Server
-      include NetHttp2::ApiHelpers
-
       DRAFT = 'h2'
 
       attr_accessor :on_req
