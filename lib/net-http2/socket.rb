@@ -33,7 +33,9 @@ module NetHttp2
       socket = ::Socket.new(family, ::Socket::SOCK_STREAM, 0)
       socket.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, 1)
       socket.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true)
-      socket.setsockopt(::Socket::SOL_TCP, ::Socket::TCP_KEEPIDLE, 340)
+      if Socket.const_defined?(:SOL_TCP)
+        socket.setsockopt(::Socket::SOL_TCP, ::Socket::TCP_KEEPIDLE, 340)
+      end
 
       begin
         socket.connect_nonblock(sockaddr)
