@@ -33,6 +33,13 @@ module NetHttp2
       socket = ::Socket.new(family, ::Socket::SOCK_STREAM, 0)
       socket.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, 1)
 
+      if options[:tcp_keepalives]
+        socket.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true)
+        socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPIDLE, options[:tcp_keepidle])
+        socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPINTVL, options[:tcp_keepintvl])
+        socket.setsockopt(Socket::SOL_TCP, Socket::TCP_KEEPCNT, options[:tcp_keepcnt])
+      end
+
       begin
         socket.connect_nonblock(sockaddr)
       rescue IO::WaitWritable

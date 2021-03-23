@@ -21,6 +21,11 @@ module NetHttp2
       @connect_timeout = options[:connect_timeout] || 60
       @ssl_context     = add_npn_to_context(options[:ssl_context] || OpenSSL::SSL::SSLContext.new)
 
+      @tcp_keepalives  = options[:tcp_keepalives] || false
+      @tcp_keepidle    = options[:tcp_keepidle] || 50
+      @tcp_keepintvl   = options[:tcp_keepintvl] || 10
+      @tcp_keepcnt     = options[:tc_keepcnt] || 5
+
       PROXY_SETTINGS_KEYS.each do |key|
         instance_variable_set("@#{key}", options[key]) if options[key]
       end
@@ -156,7 +161,9 @@ module NetHttp2
 
     def new_socket
       options = {
-        ssl: ssl?, ssl_context: @ssl_context, connect_timeout: @connect_timeout
+        ssl: ssl?, ssl_context: @ssl_context, connect_timeout: @connect_timeout,
+        tcp_keepalives: @tcp_keepalives, tcp_keepidle: @tcp_keepidle,
+        tcp_keepintvl: @tcp_keepintl, tcp_keepcnt: @tcp_keepcnt
       }
       PROXY_SETTINGS_KEYS.each { |k| options[k] = instance_variable_get("@#{k}") }
       NetHttp2::Socket.create(@uri, options)
