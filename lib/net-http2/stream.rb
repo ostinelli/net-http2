@@ -1,6 +1,7 @@
 module NetHttp2
 
   class Stream
+    include Callbacks
 
     def initialize(options={})
       @h2_stream = options[:h2_stream]
@@ -10,6 +11,7 @@ module NetHttp2
       @async     = false
       @completed = false
       @mutex     = Mutex.new
+      @error     = nil
       @cv        = ConditionVariable.new
 
       listen_for_headers
@@ -42,11 +44,22 @@ module NetHttp2
       @async
     end
 
+    def wait
+      wait_for_completed
+    end
+
+    def force_close(error = nil)
+      @error = error
+      @mutex.synchronize { @cv.signal }
+    end
+
     private
 
     def listen_for_headers
       @h2_stream.on(:headers) do |hs_array|
         hs = Hash[*hs_array.flatten]
+
+        emit(:headers, hs)
 
         if async?
           @request.emit(:headers, hs)
@@ -58,6 +71,9 @@ module NetHttp2
 
     def listen_for_data
       @h2_stream.on(:data) do |data|
+
+        emit(:data, data)
+
         if async?
           @request.emit(:body_chunk, data)
         else
@@ -69,6 +85,8 @@ module NetHttp2
     def listen_for_close
       @h2_stream.on(:close) do |data|
         @completed = true
+
+        emit(:close, data)
 
         if async?
           @request.emit(:close, data)
@@ -98,6 +116,7 @@ module NetHttp2
 
     def wait_for_completed
       @mutex.synchronize { @cv.wait(@mutex, @request.timeout) }
+      raise @error if @error
     end
   end
 end

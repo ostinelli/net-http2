@@ -9,6 +9,7 @@ module NetHttp2
   PROXY_SETTINGS_KEYS = [:proxy_addr, :proxy_port, :proxy_user, :proxy_pass]
 
   AsyncRequestTimeout = Class.new(StandardError)
+  SocketClosedError = Class.new(StandardError)
 
   class Client
 
@@ -39,8 +40,7 @@ module NetHttp2
 
     def call_async(request)
       ensure_open
-      stream = new_monitored_stream_for request
-      stream.async_call_with request
+      new_stream.async_call_with request
     end
 
     def prepare_request(method, path, options={})
@@ -53,6 +53,7 @@ module NetHttp2
 
     def close
       exit_thread(@socket_thread)
+      @socket_error = SocketClosedError.new
       init_vars
     end
 
@@ -74,9 +75,13 @@ module NetHttp2
 
     private
 
-    def init_vars
+    def init_vars(error: nil)
       @mutex.synchronize do
         @socket.close if @socket && !@socket.closed?
+
+        (@streams || {}).each do |k, v|
+          v.force_close(@socket_error)
+        end
 
         @h2              = nil
         @socket          = nil
@@ -86,20 +91,16 @@ module NetHttp2
       end
     end
 
-    def new_stream
-      @mutex.synchronize { NetHttp2::Stream.new(h2_stream: h2.new_stream) }
+    def new_stream()
+      stream = @mutex.synchronize { NetHttp2::Stream.new(h2_stream: h2.new_stream) }
+
+      @streams[stream.id] = stream
+      stream.on(:close) { @streams.delete(stream.id) }
+
+      stream
     rescue StandardError => e
       close
       raise e
-    end
-
-    def new_monitored_stream_for(request)
-      stream = new_stream
-
-      @streams[stream.id] = true
-      request.on(:close) { @streams.delete(stream.id) }
-
-      stream
     end
 
     def ensure_open
@@ -115,13 +116,15 @@ module NetHttp2
 
           rescue EOFError
             # socket closed
+            @socket_error = SocketError.new('Socket was remotely closed')
             init_vars
-            callback_or_raise SocketError.new('Socket was remotely closed')
+            callback_or_raise @socket_error
 
           rescue Exception => e
             # error on socket
+            @socket_error = e
             init_vars
-            callback_or_raise e
+            callback_or_raise @socket_error
           end
         end.tap { |t| t.abort_on_exception = true }
       end
