@@ -1,3 +1,4 @@
+# frozen-string-literal: false
 require 'spec_helper'
 
 describe "Errors" do
