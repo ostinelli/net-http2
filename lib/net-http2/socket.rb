@@ -26,8 +26,9 @@ module NetHttp2
     end
 
     def self.tcp_socket(uri, options)
-      family   = ::Socket::AF_INET
-      address  = ::Socket.getaddrinfo(uri.host, nil, family).first[3]
+      addrinfo = ::Socket.getaddrinfo(uri.host, nil, nil)
+      address  = addrinfo.first[3]
+      family   = addrinfo.first[4]
       sockaddr = ::Socket.pack_sockaddr_in(uri.port, address)
 
       socket = ::Socket.new(family, ::Socket::SOCK_STREAM, 0)
