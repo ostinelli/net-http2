@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/ostinelli/net-http2.svg?branch=master)](https://travis-ci.org/ostinelli/net-http2)
 [![Code Climate](https://codeclimate.com/github/ostinelli/net-http2/badges/gpa.svg)](https://codeclimate.com/github/ostinelli/net-http2)
 [![Gem Version](https://badge.fury.io/rb/net-http2.svg)](https://badge.fury.io/rb/net-http2)
 
