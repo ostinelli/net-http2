@@ -5,7 +5,7 @@ module NetHttp2
     def initialize(options={})
       @h2_stream = options[:h2_stream]
       @headers   = {}
-      @data      = ''
+      @data      = String.new
       @request   = nil
       @async     = false
       @completed = false

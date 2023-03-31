@@ -70,7 +70,8 @@ module NetHttp2
       # So we’ll keep HTTP/1.1
       http_version = '1.1'
 
-      buf = "CONNECT #{uri.host}:#{uri.port} HTTP/#{http_version}\r\n"
+      buf = String.new
+      buf << "CONNECT #{uri.host}:#{uri.port} HTTP/#{http_version}\r\n"
       buf << "Host: #{uri.host}:#{uri.port}\r\n"
       if proxy_user
         credential = ["#{proxy_user}:#{proxy_pass}"].pack('m')
@@ -87,7 +88,7 @@ module NetHttp2
     private
 
     def self.validate_proxy_response!(socket)
-      result = ''
+      result = String.new
       loop do
         line = socket.gets
         break if !line || line.strip.empty?
