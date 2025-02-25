@@ -1,3 +1,4 @@
+# frozen-string-literal: false
 module NetHttp2
 
   module Dummy
