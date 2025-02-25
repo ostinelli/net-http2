@@ -44,14 +44,15 @@ describe "Timeouts with sync requests" do
     expect(responses.compact).to be_empty
   end
 
-  it "returns nil even if the client's main thread gets killed" do
+  it "returns raises an error if the client's main thread gets killed" do
 
     Thread.new do
       sleep 1
       client.close
     end
 
-    response = client.call(:get, '/path', headers: { 'x-custom-header' => 'custom' }, timeout: 2)
-    expect(response).to be_nil
+    expect {
+      client.call(:get, '/path', headers: { 'x-custom-header' => 'custom' }, timeout: 2)
+    }.to raise_error(NetHttp2::SocketClosedError)
   end
 end
